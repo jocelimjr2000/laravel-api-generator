@@ -1,0 +1,1 @@
+    public function findById({{ typeId }} {{ idVar }}): ?{{ dto }};

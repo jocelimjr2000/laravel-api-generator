@@ -1,0 +1,21 @@
+        /**
+         * @OA\Delete(
+         *     tags={{{ tags }}},
+         *     summary="Deletar",
+         *     description="Deletar",
+         *     path="/{{ prefix }}",
+         *     @OA\RequestBody(
+         *         @OA\MediaType(mediaType="application/json",
+         *              @OA\Schema(
+         *                  @OA\Property(property="{{ idParameter }}", type="string", example="", description="ID"),
+         *                  required={"{{ idParameter }}"}
+         *             )
+         *         )
+         *     ),
+         *     @OA\Response(
+         *          response="200",
+         *          description="",
+         *      ),
+         * ),
+         */
+        Route::delete('/', 'delete');

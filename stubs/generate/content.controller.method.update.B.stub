@@ -1,0 +1,26 @@
+    /**
+     * @param {{ formUpdateRequest }} $request
+     * @return JsonResponse
+     */
+    public function update({{ formUpdateRequest }} $request)
+    {
+        $currentData = {{ model }}::find($request->{{ idParameter }});
+
+        /** @var {{ dto }} $currentDataDTO */
+        $currentDataDTO = {{ mapper }}::model2DTO($currentData);
+
+        /** @var {{ dto }} $requestDTO */
+        $requestDTO = {{ mapper }}::data2DTO($request->all());
+
+        /** @var {{ dto }} $mergedDTO */
+        $mergedDTO = {{ mapper }}::mergeDTO($requestDTO, $currentDataDTO);
+
+        {{ modelVar }} = {{ mapper }}::dto2Model($mergedDTO, $currentData);
+
+        {{ modelVar }}->save();
+
+        /** @var {{ dto }} $result */
+        $result = {{ mapper }}::model2DTO({{ modelVar }});
+
+        return response()->json($result);
+    }

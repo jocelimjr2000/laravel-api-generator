@@ -1,0 +1,10 @@
+<?php
+
+namespace App\Services;
+
+{{ imports }}
+
+class {{ service }}
+{
+{{ parameters }}{{ construct }}{{ methods }}
+}

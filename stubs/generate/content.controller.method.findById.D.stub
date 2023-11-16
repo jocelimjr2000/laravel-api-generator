@@ -1,0 +1,10 @@
+    /**
+     * @param {{ typeId }} {{ idVar }}
+     * @return JsonResponse
+     */
+    public function findById({{ typeId }} {{ idVar }})
+    {
+        $result = {{ model }}::find({{ idVar }});
+
+        return response()->json($result);
+    }

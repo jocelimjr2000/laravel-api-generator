@@ -1,0 +1,12 @@
+    /**
+     * @param {{ typeId }} {{ idVar }}
+     * @return bool
+     */
+    public function delete({{ typeId }} {{ idVar }}): bool
+    {
+        {{ modelVar }} = {{ model }}::find({{ idVar }});
+
+        if(!{{ modelVar }}) return false;
+
+        return {{ modelVar }}->delete({{ idVar }});
+    }

@@ -1,0 +1,101 @@
+<?php
+
+namespace App\DataTransferObject;
+
+use JsonSerializable;
+use ReflectionClass;
+
+abstract class AbstractDTO implements JsonSerializable
+{
+
+    private array $_jsonIgnore = [];
+    private ?object $_model = null;
+    private array $_calledParams = [];
+
+    public function __construct()
+    {
+        $this->jsonIgnore(['_model', '_calledParams']);
+    }
+
+    /**
+     * jsonIgnore
+     *
+     * @param  mixed $value
+     * @return mixed
+     */
+    public function jsonIgnore(string|array $value): mixed
+    {
+        if(!is_array($value)){
+            $value = [$value];
+        }
+
+        $this->_jsonIgnore = array_merge($this->_jsonIgnore, $value);
+
+        return $this;
+    }
+
+    /**
+     * jsonSerialize
+     *
+     * @return array
+     */
+    public function jsonSerialize(): array
+    {
+        $reflection = new ReflectionClass($this);
+        $properties = [];
+
+        foreach($reflection->getProperties() as $property) {
+
+            if(in_array($property->getName(), $this->_jsonIgnore)){
+                continue;
+            }
+
+            $property->setAccessible(true);
+            $method = 'get' . ucfirst($property->getName());
+
+            if(method_exists($this, $method)){
+                $properties[$property->getName()] = $this->$method();
+            }else{
+                $properties[$property->getName()] = $property->getValue($this);
+            }
+        }
+
+        return $properties;
+    }
+
+    /**
+     * @return object|null
+     */
+    public function getModel(): ?object
+    {
+        return $this->_model;
+    }
+
+    /**
+     * @param object|null $model
+     * @return mixed
+     */
+    public function setModel(?object $model): mixed
+    {
+        $this->_model = $model;
+        return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function getCalledParams(): array
+    {
+        return $this->_calledParams;
+    }
+
+    /**
+     * @param array $calledParams
+     * @return mixed
+     */
+    public function setCalledParams(array $calledParams): mixed
+    {
+        $this->_calledParams = $calledParams;
+        return $this;
+    }
+}

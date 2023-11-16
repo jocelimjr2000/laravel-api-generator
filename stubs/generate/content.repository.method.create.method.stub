@@ -1,0 +1,10 @@
+    /**
+     * @param {{ dto }} {{ dtoVar }}
+     * @return {{ dto }}
+     */
+    public function create({{ dto }} {{ dtoVar }}): {{ dto }}
+    {
+        {{ modelVar }} = {{ model }}::create({{ mapper }}::dto2Array({{ dtoVar }}));
+
+        return {{ mapper }}::model2DTO({{ modelVar }});
+    }

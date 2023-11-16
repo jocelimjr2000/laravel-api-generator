@@ -1,0 +1,11 @@
+    /**
+     * @param {{ dto }} {{ dtoVar }}
+     * @return {{ dto }}
+     */
+    public function create({{ dto }} {{ dtoVar }}): {{ dto }}
+    {
+        {{ modelVar }} = {{ model }}::create([
+{{ arrayForModel }}        ]);
+
+        return {{ modelVar }};
+    }

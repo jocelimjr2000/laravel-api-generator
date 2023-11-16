@@ -1,0 +1,12 @@
+    public function testFindById()
+    {
+        $responseAll = $this->get('/{{ prefix }}');
+        $all = json_decode($responseAll->content())[0];
+        $id = $all->{{ idParameter }};
+
+        $response = $this->get('/{{ prefix }}/' . $id);
+
+        var_dump($response->content());
+
+        $response->assertStatus(200);
+    }

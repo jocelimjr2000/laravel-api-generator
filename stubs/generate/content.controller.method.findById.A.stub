@@ -1,0 +1,8 @@
+    /**
+     * @param {{ typeId }} {{ idVar }}
+     * @return JsonResponse
+     */
+    public function findById({{ typeId }} {{ idVar }})
+    {
+        return response()->json($this->{{ serviceOrRepository }}->findById({{ idVar }}));
+    }

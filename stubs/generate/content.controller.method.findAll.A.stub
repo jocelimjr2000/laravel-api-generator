@@ -1,0 +1,7 @@
+    /**
+     * @return JsonResponse
+     */
+    public function findAll()
+    {
+        return response()->json($this->{{ serviceOrRepository }}->findAll());
+    }

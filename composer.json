@@ -1,0 +1,18 @@
+{
+    "name": "jocelimjr2000/laravel-api-generator",
+    "description": "A Laravel code generator",
+    "homepage": "https://github.com/jocelimjr2000/laravel-api-generator.git",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Jocelim Jr",
+            "email": "jocelimjr2000@hotmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "JocelimJr\\LaravelApiGenerator\\": "src/"
+        }
+    }
+}

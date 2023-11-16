@@ -1,0 +1,14 @@
+    /**
+     * @param {{ dto }} {{ dtoVar }}
+     * @return {{ dto }}|null
+     */
+    public function update({{ dto }} {{ dtoVar }}): ?{{ dto }}
+    {
+        {{ modelVar }} = {{ model }}::find({{ dtoVar }}->{{ idGetter }}());
+
+        if(!{{ modelVar }}) return null;
+
+{{ modelSettersValuesDTO }}        {{ modelVar }}->save();
+
+        return $this->modelToDTO({{ modelVar }});
+    }

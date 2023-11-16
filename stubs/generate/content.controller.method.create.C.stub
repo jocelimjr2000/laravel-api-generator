@@ -1,0 +1,13 @@
+    /**
+     * @param {{ formCreateRequest }} $request
+     * @return JsonResponse
+     */
+    public function create({{ formCreateRequest }} $request)
+    {
+        {{ modelVar }} = {{ model }}::create([
+{{ arrayForModel }}        ]);
+
+        {{ dtoVar }} = $this->modelToDTO({{ modelVar }});
+
+        return response()->json({{ dtoVar }});
+    }

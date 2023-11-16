@@ -1,0 +1,10 @@
+<?php
+
+namespace App\Repositories;
+
+{{ imports }}
+
+class {{ repository }} implements {{ repositoryInterface }}
+{
+{{ methods }}
+}

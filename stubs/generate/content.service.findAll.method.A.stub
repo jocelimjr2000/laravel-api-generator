@@ -1,0 +1,7 @@
+    /**
+     * @return array
+     */
+    public function findAll(): array
+    {
+        return $this->{{ repositoryParameter }}->findAll();
+    }

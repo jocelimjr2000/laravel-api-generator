@@ -1,0 +1,15 @@
+    /**
+     * @param {{ formUpdateRequest }} $request
+     * @return JsonResponse
+     */
+    public function update({{ formUpdateRequest }} $request)
+    {
+        $currentData = $this->{{ serviceOrRepository }}->findById($request->{{ idParameter }});
+
+        /** @var {{ dto }} {{ dtoVar }} */
+        {{ dtoVar }} = {{ mapper }}::data2DTO(data: $request->all(), currentDTO: $currentData);
+
+        $result = $this->{{ serviceOrRepository }}->update({{ dtoVar }});
+
+        return response()->json($result);
+    }

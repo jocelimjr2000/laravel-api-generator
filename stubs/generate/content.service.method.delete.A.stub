@@ -1,0 +1,8 @@
+    /**
+     * @param {{ typeId }} {{ idVar }}
+     * @return bool
+     */
+    public function delete({{ typeId }} {{ idVar }}): bool
+    {
+        return $this->{{ repositoryParameter }}->delete({{ idVar }});
+    }

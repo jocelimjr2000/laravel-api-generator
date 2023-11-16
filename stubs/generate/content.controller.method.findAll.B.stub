@@ -1,0 +1,10 @@
+    /**
+     * @return JsonResponse
+     */
+    public function findAll()
+    {
+        {{ modelVar }} = {{ model }}::all();
+        $result = {{ mapper }}::listModel2DTO({{ modelVar }});
+
+        return response()->json($result);
+    }

@@ -1,0 +1,1 @@
+    public function update({{ dto }} {{ dtoVar }}, {{ model }} {{ modelVar }} = null): ?{{ dto }};

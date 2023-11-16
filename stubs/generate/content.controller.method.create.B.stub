@@ -1,0 +1,16 @@
+    /**
+     * @param {{ formCreateRequest }} $request
+     * @return JsonResponse
+     */
+    public function create({{ formCreateRequest }} $request)
+    {
+        /** @var {{ dto }} {{ dtoVar }} */
+        {{ dtoVar }} = {{ mapper }}::data2DTO($request->all());
+
+        $createdData = {{ model }}::create({{ mapper }}::dto2Array({{ dtoVar }}));
+
+        /** @var {{ dto }} $result */
+        $result = {{ mapper }}::model2DTO($createdData);
+
+        return response()->json($result);
+    }

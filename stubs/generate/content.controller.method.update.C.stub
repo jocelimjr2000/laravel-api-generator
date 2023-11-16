@@ -1,0 +1,13 @@
+    /**
+     * @param {{ formUpdateRequest }} $request
+     * @return JsonResponse
+     */
+    public function update({{ formUpdateRequest }} $request)
+    {
+        {{ modelVar }} = {{ model }}::find($request->{{ idParameter }});
+{{ modelSettersValues }}        {{ modelVar }}->save();
+
+        {{ dtoVar }} = $this->modelToDTO({{ modelVar }});
+
+        return response()->json({{ dtoVar }});
+    }

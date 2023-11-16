@@ -1,0 +1,25 @@
+        /**
+         * @OA\Post(
+         *     tags={{{ tags }}},
+         *     summary="Cadastrar",
+         *     description="Cadastrar",
+         *     path="/{{ prefix }}",
+         *     @OA\RequestBody(
+         *         @OA\MediaType(mediaType="application/json",
+         *              @OA\Schema(
+{{ swaggerCreateRequest }}
+         *                  required={{{ swaggerRequiredCreate }}}
+         *             )
+         *         )
+         *     ),
+         *     @OA\Response(
+         *          response="200",
+         *          description="",
+         *          @OA\JsonContent(
+         *              type="object",
+{{ swaggerResponse }}
+         *          )
+         *      ),
+         * ),
+         */
+        Route::post('/', 'create');

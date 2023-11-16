@@ -1,0 +1,8 @@
+    public function testFindAll()
+    {
+        $response = $this->get('/{{ prefix }}');
+
+        var_dump($response->content());
+
+        $response->assertStatus(200);
+    }

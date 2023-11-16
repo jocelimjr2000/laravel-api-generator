@@ -1,0 +1,20 @@
+<?php
+/** @noinspection SpellCheckingInspection */
+
+namespace App\Mappers;
+
+{{ imports }}
+
+class {{ mapper }} extends AbstractMapper
+{
+
+    const SCHEMA = [
+{{ schema }}
+    ];
+
+    const DTO = {{ dto }}::class;
+
+    const MODEL = {{ model }}::class;
+
+    const DTO2ARRAY_IGNORE = [{{ dto2ArrayIgnore }}];
+}

@@ -1,0 +1,13 @@
+    /**
+     * @param {{ formCreateRequest }} $request
+     * @return JsonResponse
+     */
+    public function create({{ formCreateRequest }} $request)
+    {
+        /** @var {{ dto }} {{ dtoVar }} */
+        {{ dtoVar }} = {{ mapper }}::data2DTO($request->all());
+
+        $result = $this->{{ serviceOrRepository }}->create({{ dtoVar }});
+
+        return response()->json($result);
+    }

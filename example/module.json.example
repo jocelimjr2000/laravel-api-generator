@@ -1,0 +1,148 @@
+{
+    "moduleName": "Menu",                               // Nome do módulo - Parâmetro obrigatório
+    "tags": ["menu"] | "menu",                          // Tags para o swagger - Parâmetro opcional - Valor padrão: null
+    "serviceLayer": true,                               // Udar camada Services - Parâmetro opcional - Valor padrão: true
+    "repositoryLayer": true,                            // Usar camada Repositories - Parâmetro opcional - Valor padrão: true
+    "mapperLayer": true,                                // Usar camada Mapper - Parâmetro opcional - Valor padrão: true
+    "dtoLayer": true,                                   // Usar camada DTO - Parâmetro opcional - Valor padrão: true
+    "createMigration": true,                            // Criar Migration - Parâmetro opcional - Valor padrão: true
+    "createModel": true,                                // Criar Model - Parâmetro opcional - Valor padrão: true
+    "createRepository": true,                           // Criar Repository - Parâmetro opcional - Valor padrão: true
+    "createMapper": true,                               // Criar Mapper - Parâmetro opcional - Valor padrão: true
+    "createDTO": true,                                  // Criar DTO - Parâmetro opcional - Valor padrão: true
+    "createService": true,                              // Criar Service - Parâmetro opcional - Valor padrão: true
+    "createController": true,                           // Criar Controller - Parâmetro opcional - Valor padrão: true
+    "createRoutes": true,                               // Criar Routes - Parâmetro opcional - Valor padrão: true
+    "createFeatureTest": true,                          // Criar Feature Teste - Parâmetro opcional - Valor padrão: true
+    "writeApiFindAll": true,                            // Criar Api findAll - Parâmetro opcional - Valor padrão: true
+    "writeApiFindById": true,                           // Criar Api findByApi - Parâmetro opcional - Valor padrão: true
+    "writeApiCreate": true,                             // Criar Api create - Parâmetro opcional - Valor padrão: true
+    "writeApiUpdate": true,                             // Criar Api update - Parâmetro opcional - Valor padrão: true
+    "writeApiDelete": true,                             // Criar Api delete - Parâmetro opcional - Valor padrão: true
+    "apiPrefix": "menu",                                // Prefixo da api - Parâmetro opcional - Valor padrão: nome do módulo
+    "prefixDateMigration": "2022_10_13_114019",         // Prefixo da migration - Parâmetro opcional - Valor padrão: data atual
+    "model": "",                                        // Nome alternativo para o Model - Parâmetro opcional - Valor padrão: nome do módulo
+    "repository": "",                                   // Nome alternativo para o Repository - Parâmetro opcional - Valor padrão: nome do módulo + "Repository"
+    "repositoryInterface": "",                          // Nome alternativo para a interface do Repository - Parâmetro opcional - Valor padrão: repository + "Interface"
+    "mapper": "",                                       // Nome alternativo para o Mapper - Parâmetro opcional - Valor padrão: repository + "Mapper"
+    "dto": "",                                          // Nome alternativo para o DTO - Parâmetro opcional - Valor padrão: repository + "DTO"
+    "service": "",                                      // Nome alternativo para o Service - Parâmetro opcional - Valor padrão: nome do módulo + "Service"
+    "controller": "",                                   // Nome alternativo para o Controller - Parâmetro opcional - Valor padrão: nome do módulo + "Controller"
+    "featureTest": "",                                  // Nome alternativo para o Feature Test - Parâmetro opcional - Valor padrão: nome do módulo + "Test"
+    "table": "MENU",                                    // Nome alternativo para a tabela - Parâmetro opcional - Valor padrão: nome do módulo - Utilizado na migration
+    "columns": [
+        // Parâmetros comuns
+        {
+            "alias": "alias",                           // Alias da coluna - Parâmetro obrigatório - Utilizado no DTO
+            "name": "COLUMN",                           // Nome real da coluna - Parâmetro obrigatório - Utilizado na migration, mapper e model
+            "type": "string",                           // Tipo da coluna do banco - Parâmetro obrigatório - Utilizado na migration
+            "primary": true,                            // Indica se a coluna é PK
+            "fillable": false,                          // Se coluna será utilizada no create do eloquent - Parâmetro opcional - Utilizado no model
+            "nullable": true,                           // Se coluna do banco permite null - Parâmetro opcional - Utilizado na migration
+            "unique": true,                             // Se coluna do banco do tipo unique (bloqueia registros duplicados)
+            "default": "value",                         // Valor padrão - Parâmetro opcional - Utilizado na migration
+            "validations": [],                          // Validações para Create, Update e Delete
+            "validationsOnCreate": [],                  // Validações para Create
+            "validationsOnUpdate": [],                  // Validações para Update
+            "validationsOnDelete": []                   // Validações para Delete
+        },
+
+        // Exemplos de colunas
+
+        // ID
+        {
+            "alias": "id_alias",
+            "name": "COL_ID",
+            "type": "id"
+        },
+
+        // UUID
+        {
+            "alias": "uuid_alias",
+            "name": "COL_UUID",
+            "type": "uuid"
+        },
+
+        // String
+        {
+            "alias": "string_alias",
+            "name": "COL_STRING",
+            "type": "string",
+
+            // Parâmetros específicos deste tipo
+            "length": "50"                              // Tamanho da coluna - Parâmetro opcional - Utilizado na migration
+        },
+
+        // Boolean
+        {
+            "alias": "boolean_alias",
+            "name": "COL_BOOLEAN",
+            "type": "boolean",
+            "default": true
+        },
+
+        // Double
+        {
+            "alias": "value_double",
+            "name": "COL_VALOR_A",
+            "type": "double",
+
+            // Parâmetros específicos deste tipo
+            "total": 8,                                 // Parâmetro opcional - Utilizado na migration
+            "places": 1,                                // Parâmetro opcional - Utilizado na migration
+            "unsigned": 1                               // Parâmetro opcional - Utilizado na migration
+        },
+
+        // Float
+        {
+            "alias": "value_float",
+            "name": "COL_VALOR_B",
+            "type": "float",
+
+            // Parâmetros específicos deste tipo
+            "total": 8,                                 // Parâmetro opcional - Utilizado na migration
+            "places": 1,                                // Parâmetro opcional - Utilizado na migration
+            "unsigned": 1                               // Parâmetro opcional - Utilizado na migration
+        },
+
+        // Date
+        {
+            "alias": "value_date",
+            "name": "COL_DATE",
+            "type": "date"
+        },
+
+        // Timestamp
+        {
+            "alias": "createdAt",
+            "name": "COL_CADASTRADO",
+            "type": "timestamp",
+
+            // Parâmetros específicos deste tipo
+            "precision": 0,                             // Parâmetro opcional - Utilizado na migration
+            "createdAt": true                           // Se a coluna é do tipo 'createdAt' - Parâmetro opcional - Utilizado no model
+        },
+
+        // DateTime
+        {
+            "alias": "updatedAt",
+            "name": "COL_ALTERADO",
+            "type": "dateTime",
+
+            // Parâmetros específicos deste tipo
+            "precision": 0,                             // Parâmetro opcional - Utilizado na migration
+            "updatedAt": true                           // Se a coluna é do tipo 'updatedAt' - Parâmetro opcional - Utilizado no model
+        },
+
+        // Timestamp
+        {
+            "alias": "deletedAt",
+            "name": "COL_DELETADO",
+            "type": "timestamp",
+
+            // Parâmetros específicos deste tipo
+            "precision": 0,                             // Parâmetro opcional - Utilizado na migration
+            "deletedAt": true                           // Se a coluna é do tipo 'deletedAt' - Parâmetro opcional - Utilizado no model
+        }
+    ]
+}

@@ -1,0 +1,25 @@
+        /**
+         * @OA\Put(
+         *     tags={{{ tags }}},
+         *     summary="Editar",
+         *     description="Editar",
+         *     path="/{{ prefix }}",
+         *     @OA\RequestBody(
+         *         @OA\MediaType(mediaType="application/json",
+         *              @OA\Schema(
+{{ swaggerUpdateRequest }}
+         *                  required={{{ swaggerRequiredUpdate }}}
+         *             )
+         *         )
+         *     ),
+         *     @OA\Response(
+         *          response="200",
+         *          description="",
+         *          @OA\JsonContent(
+         *              type="object",
+{{ swaggerResponse }}
+         *          )
+         *      ),
+         * ),
+         */
+        Route::put('/', 'update');

@@ -1,0 +1,6 @@
+
+    public function __construct({{ repositoryInterface }} {{ repositoryVar }})
+    {
+        $this->{{ repositoryParameter }} = {{ repositoryVar }};
+    }
+

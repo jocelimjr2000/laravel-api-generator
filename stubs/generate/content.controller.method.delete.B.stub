@@ -1,0 +1,10 @@
+    /**
+     * @param {{ formDeleteRequest }} $request
+     * @return JsonResponse
+     */
+    public function delete({{ formDeleteRequest }} $request)
+    {
+        {{ modelVar }} = {{ model }}::find($request->{{ idParameter }});
+
+        return response()->json({{ modelVar }}->delete());
+    }

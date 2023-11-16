@@ -1,0 +1,19 @@
+        /**
+         * @OA\Get(
+         *     tags={{{ tags }}},
+         *     summary="Listar",
+         *     description="Listar",
+         *     path="/{{ prefix }}",
+         *     @OA\Response(
+         *          response="200",
+         *          description="",
+         *          @OA\JsonContent(
+         *              type="array",
+         *              @OA\Items(
+{{ swaggerResponseArr }}
+         *              )
+         *          )
+         *      ),
+         * ),
+         */
+        Route::get('/', 'findAll');

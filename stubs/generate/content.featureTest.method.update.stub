@@ -1,0 +1,16 @@
+    public function testUpdate()
+    {
+        $responseAll = $this->get('/{{ prefix }}');
+        $all = json_decode($responseAll->content())[0];
+        $id = $all->{{ idParameter }};
+
+        $data = [
+            '{{ idParameter }}' => $id,{{ dataUpdate }}
+        ];
+
+        $response = $this->put('/{{ prefix }}', $data);
+
+        var_dump($response->content());
+
+        $response->assertStatus(200);
+    }

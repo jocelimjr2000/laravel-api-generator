@@ -1,0 +1,17 @@
+    /**
+     * @param {{ typeId }} {{ idVar }}
+     * @return JsonResponse
+     */
+    public function findById({{ typeId }} {{ idVar }})
+    {
+        {{ modelVar }} = {{ model }}::find({{ idVar }});
+
+        $result = null;
+
+        if({{ modelVar }}){
+            /** @var {{ dto }} $result */
+            $result = {{ mapper }}::model2DTO({{ modelVar }});
+        }
+
+        return response()->json($result);
+    }

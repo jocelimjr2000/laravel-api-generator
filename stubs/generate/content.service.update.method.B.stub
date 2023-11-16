@@ -1,0 +1,16 @@
+    /**
+     * @param {{ dto }} {{ dtoVar }}
+     * @return {{ dto }}|null
+     */
+    public function update({{ dto }} {{ dtoVar }}): ?{{ dto }}
+    {
+        {{ modelVar }} = {{ dtoVar }}->getModel() ?: {{ model }}::find({{ dtoVar }}->{{ idGetter }}());
+
+        if(!{{ modelVar }}) return null;
+
+        $result = {{ mapper }}::dto2Model({{ dtoVar }}, {{ modelVar }});
+
+        $result->save();
+
+        return {{ mapper }}::model2DTO($result);
+    }

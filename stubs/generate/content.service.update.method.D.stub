@@ -1,0 +1,14 @@
+    /**
+     * @param array $data
+     * @return {{ model }}|null
+     */
+    public function update(array $data): ?{{ model }}
+    {
+        {{ modelVar }} = {{ model }}::find($data->{{ idParameter }}());
+
+        if(!{{ modelVar }}) return null;
+
+{{ modelSettersValues }}        {{ modelVar }}->save();
+
+        return {{ modelVar }};
+    }

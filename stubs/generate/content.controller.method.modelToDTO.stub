@@ -1,0 +1,10 @@
+    /**
+     * @param {{ model }} {{ modelVar }}
+     * @return {{ dto }}
+     */
+    private function modelToDTO({{ model }} {{ modelVar }}): {{ dto }}
+    {
+        {{ dtoVar }} = new {{ dto }}();
+{{ dtoSettersValues }}
+        return {{ dtoVar }};
+    }

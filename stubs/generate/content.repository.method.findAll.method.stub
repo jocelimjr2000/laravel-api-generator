@@ -1,0 +1,8 @@
+    /**
+     * @return array
+     */
+    public function findAll(): array
+    {
+        $result = {{ model }}::all();
+        return {{ mapper }}::listModel2DTO($result);
+    }

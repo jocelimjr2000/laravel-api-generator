@@ -1,0 +1,9 @@
+    /**
+     * @return JsonResponse
+     */
+    public function findAll()
+    {
+        $result = {{ model }}::all();
+
+        return response()->json($result);
+    }

@@ -1,0 +1,15 @@
+    /**
+     * @return JsonResponse
+     */
+    public function findAll()
+    {
+        $allData = {{ model }}::all();
+
+        $result = [];
+
+        foreach($allData as $data){
+            $result[] = $this->modelToDTO($data);
+        }
+
+        return response()->json($result);
+    }

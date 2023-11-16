@@ -1,0 +1,10 @@
+    /**
+     * @param {{ formDeleteRequest }} $request
+     * @return JsonResponse
+     */
+    public function delete({{ formDeleteRequest }} $request)
+    {
+        $this->{{ serviceOrRepository }}->delete($request->{{ idParameter }});
+
+        return response()->json();
+    }

@@ -1,0 +1,26 @@
+        /**
+         * @OA\Get(
+         *     tags={{{ tags }}},
+         *     summary="Pesquisar por id",
+         *     description="Pesquisar por id",
+         *     path="/{{ prefix }}/{{{ idParameter }}}",
+         *     @OA\Parameter(
+         *         description="ID",
+         *         in="path",
+         *         name="{{ idParameter }}",
+         *         required=true,
+         *         @OA\Schema(
+         *             type="string"
+         *         )
+         *     ),
+         *     @OA\Response(
+         *          response="200",
+         *          description="",
+         *          @OA\JsonContent(
+         *              type="object",
+{{ swaggerResponse }}
+         *          )
+         *      ),
+         * ),
+         */
+        Route::get('/{{{ idParameter }}}', 'findById');

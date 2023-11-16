@@ -1,0 +1,8 @@
+    /**
+     * @param {{ dto }} {{ dtoVar }}
+     * @return {{ dto }}|null
+     */
+    public function update({{ dto }} {{ dtoVar }}): ?{{ dto }}
+    {
+        return $this->{{ repositoryParameter }}->update({{ dtoVar }});
+    }

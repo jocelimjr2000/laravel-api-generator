@@ -1,0 +1,8 @@
+    /**
+     * @param {{ dto }} {{ dtoVar }}
+     * @return {{ dto }}
+     */
+    public function create({{ dto }} {{ dtoVar }}): {{ dto }}
+    {
+        return $this->{{ repositoryParameter }}->create({{ dtoVar }});
+    }

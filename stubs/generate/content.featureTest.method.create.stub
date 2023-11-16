@@ -1,0 +1,11 @@
+    public function testCreate()
+    {
+        $data = [{{ dataCreate }}
+        ];
+
+        $response = $this->post('/{{ prefix }}', $data);
+
+        var_dump($response->content());
+
+        $response->assertStatus(200);
+    }

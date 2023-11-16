@@ -1,0 +1,12 @@
+    public function testDelete()
+    {
+        $responseAll = $this->get('/{{ prefix }}');
+        $all = json_decode($responseAll->content())[0];
+        $id = $all->{{ idParameter }};
+
+        $data = [ '{{ idParameter }}' => $id ];
+
+        $response = $this->delete('/{{ prefix }}', $data);
+
+        $response->assertStatus(200);
+    }

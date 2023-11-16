@@ -1,0 +1,16 @@
+    /**
+     * @param {{ dto }} {{ dtoVar }}
+     * @return {{ dto }}
+     */
+    public function createOrUpdate({{ dto }} {{ dtoVar }}): {{ dto }}
+    {
+        $find = $this->{{ repositoryVar }}->findById({{ dtoVar }}->{{ idGetter }}());
+
+        if($find){
+            {{ dtoVar }} = {{ mapper }}::mergeDTO({{ dtoVar }}, $find);
+
+            return $this->{{ repositoryVar }}->update({{ dtoVar }});
+        }
+
+        return $this->{{ repositoryVar }}->create({{ dtoVar }});
+    }

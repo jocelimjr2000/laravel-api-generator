@@ -1,0 +1,351 @@
+<?php
+/** @noinspection SpellCheckingInspection */
+/** @noinspection PhpUnused */
+/** @noinspection PhpUndefinedClassInspection */
+
+namespace App\Mappers;
+
+use Exception;
+
+abstract class AbstractMapper
+{
+
+    const SCHEMA = [];
+
+    const DTO = null;
+    const MODEL = null;
+
+    const MODEL2DTO_IGNORE = [];
+    const REQUEST2DTO_IGNORE = [];
+    const MERGEDTO_IGNORE = [];
+    const DTO2MODEL_IGNORE = [];
+    const DTO2ARRAY_IGNORE = [];
+    const DB2DTO_IGNORE = [];
+    const GLOBAL_IGNORE = [];
+
+    /**
+     * = [test::class, 'staticMethod']
+     *  or
+     * = 'globalFunction'
+     */
+    const MODEL2DTO_CALLBACK = null;
+    const REQUEST2DTO_CALLBACK = null;
+    const MERGEDTO_CALLBACK = null;
+    const DTO2MODEL_CALLBACK = null;
+    const DTO2ARRAY_CALLBACK = null;
+    const DB2DTO_CALLBACK = null;
+
+    /**
+     * model2DTO
+     *
+     * @param object $model
+     * @param bool $setModel
+     * @param array $ignoreParameters
+     * @return mixed
+     */
+    public static function model2DTO(
+        object $model,
+        bool   $setModel = true,
+        array  $ignoreParameters = []
+    ): mixed
+    {
+        $dto = new (static::DTO);
+
+        foreach (static::SCHEMA as $p => $c) {
+
+            if (
+                $model->{$c} === null ||
+                in_array($p, array_unique(array_merge($ignoreParameters, static::GLOBAL_IGNORE, static::MODEL2DTO_IGNORE)))
+            ) continue;
+
+            $setter = 'set' . ucfirst($p);
+
+            $value = $model->{$c};
+            $value = self::__executeCallback(static::MODEL2DTO_CALLBACK, $p, $value);
+
+            $dto->$setter($value);
+        }
+
+        if ($setModel && method_exists($dto, 'setModel')) {
+            $dto->setModel($model);
+        }
+
+        return $dto;
+    }
+
+    /**
+     * listModel2DTO
+     *
+     * @param mixed $models
+     * @param bool $setModel
+     * @param array $ignoreParameters
+     * @return array
+     */
+    public static function listModel2DTO(
+        mixed $models,
+        bool  $setModel = true,
+        array $ignoreParameters = []
+    ): array
+    {
+        $result = [];
+
+        foreach ($models as $model) {
+            $result[] = self::model2DTO($model, $setModel, $ignoreParameters);
+        }
+
+        return $result;
+    }
+
+    /**
+     * request2DTO
+     *
+     * @param array $allParameters
+     * @param array $ignoreParameters
+     * @param object|null $currentData
+     * @return mixed
+     */
+    public static function request2DTO(
+        array  $allParameters,
+        array  $ignoreParameters = [],
+        object $currentData = null
+    ): mixed
+    {
+        $dto = $currentData ?: new (static::DTO);
+
+        foreach (static::SCHEMA as $p => $c) {
+
+            if (
+                in_array($p, array_unique(array_merge($ignoreParameters, static::GLOBAL_IGNORE, static::REQUEST2DTO_IGNORE)))
+            ) continue;
+
+            $setter = 'set' . ucfirst($p);
+            $getter = 'get' . ucfirst($p);
+
+            if (!array_key_exists($p, $allParameters)) {
+                if ($currentData) {
+
+                    $value = $currentData->$getter();
+                    $value = self::__executeCallback(static::REQUEST2DTO_CALLBACK, $p, $value);
+
+                    $dto->$setter($value);
+                }
+
+                continue;
+            }
+
+            $value = $allParameters[$p];
+            $value = self::__executeCallback(static::REQUEST2DTO_CALLBACK, $p, $value);
+
+            $dto->$setter($value);
+        }
+
+        if (method_exists($dto, 'setCalledParams')) {
+            $dto->setCalledParams(array_keys($allParameters));
+        }
+
+        return $dto;
+    }
+
+    /**
+     * @param object|null $newDTO
+     * @param object|null $currentDTO
+     * @param array $ignoreParameters
+     * @return mixed
+     */
+    public static function mergeDTO(
+        object $newDTO = null,
+        object $currentDTO = null,
+        array  $ignoreParameters = []
+    ): mixed
+    {
+        foreach (static::SCHEMA as $p => $c) {
+
+            if (
+                in_array($p, array_unique(array_merge($ignoreParameters, static::GLOBAL_IGNORE, static::MERGEDTO_IGNORE)))
+            ) continue;
+
+            if (method_exists($newDTO, 'getCalledParams')) {
+                $calledParams = $newDTO->getCalledParams();
+
+                if (is_array($calledParams) && count($calledParams) > 0 && !in_array($p, $calledParams)) {
+                    continue;
+                }
+            }
+
+            $setter = 'set' . ucfirst($p);
+            $getter = 'get' . ucfirst($p);
+
+            $value = $newDTO->$getter();
+            $value = self::__executeCallback(static::MERGEDTO_CALLBACK, $p, $value);
+
+            $currentDTO->$setter($value);
+        }
+
+        return $currentDTO;
+    }
+
+    /**
+     * dto2Model
+     *
+     * @param object $dto
+     * @param object|null $model
+     * @param bool $ignoreNull
+     * @param array $ignoreParameters
+     * @return mixed
+     */
+    public static function dto2Model(
+        object $dto,
+        object $model = null,
+        bool   $ignoreNull = false,
+        array  $ignoreParameters = []
+    ): mixed
+    {
+        if (!$model) {
+            $model = new (static::MODEL);
+        }
+
+        foreach (static::SCHEMA as $p => $c) {
+            if (
+                in_array($p, array_unique(array_merge($ignoreParameters, static::GLOBAL_IGNORE, static::DTO2MODEL_IGNORE)))
+            ) continue;
+
+            $getter = 'get' . ucfirst($p);
+
+            if ($ignoreNull && $dto->$getter() === null) {
+                continue;
+            }
+
+            $value = $dto->$getter();
+            $value = self::__executeCallback(static::DTO2MODEL_CALLBACK, $p, $value);
+
+            $model->$c = $value;
+        }
+
+        return $model;
+    }
+
+    /**
+     * dto2ArrayForModel
+     *
+     * @param object $dto
+     * @param array $ignoreParameters
+     * @return array
+     */
+    public static function dto2ArrayForModel(
+        object $dto,
+        array  $ignoreParameters = []
+    ): array
+    {
+        $arr = [];
+
+        foreach (static::SCHEMA as $p => $c) {
+            if (
+                in_array($p, array_unique(array_merge($ignoreParameters, static::GLOBAL_IGNORE, static::DTO2ARRAY_IGNORE)))
+            ) continue;
+
+            $getter = 'get' . ucfirst($p);
+
+            $value = $dto->$getter();
+            $value = self::__executeCallback(static::DTO2ARRAY_CALLBACK, $p, $value);
+
+            $arr[$c] = $value;
+        }
+
+        return $arr;
+    }
+
+    /**
+     * @param mixed $allParameters
+     * @param array $ignoreParameters
+     * @param object|null $currentData
+     * @return mixed
+     */
+    public static function db2DTO(
+        mixed  $allParameters,
+        array  $ignoreParameters = [],
+        object $currentData = null
+    ): mixed
+    {
+        $dto = $currentData ?: new (static::DTO);
+
+        foreach (static::SCHEMA as $p => $c) {
+
+            if (
+                in_array($p, array_unique(array_merge($ignoreParameters, static::GLOBAL_IGNORE, static::DB2DTO_IGNORE)))
+            ) continue;
+
+            $value = self::__getValue($allParameters, $c);
+            $value = self::__executeCallback(static::DB2DTO_CALLBACK, $p, $value);
+
+            $setter = 'set' . ucfirst($p);
+            $dto->$setter($value);
+        }
+
+        return $dto;
+    }
+
+    /**
+     * @param mixed $listDb
+     * @param array $ignoreParameters
+     * @return array
+     */
+    public static function listDb2DTO(
+        mixed $listDb,
+        array $ignoreParameters = []
+    ): array
+    {
+        $result = [];
+
+        foreach ($listDb as $db) {
+            $result[] = self::db2DTO($db, $ignoreParameters);
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param $arr
+     * @param $parameter
+     * @param $value
+     * @return mixed
+     */
+    private static function __executeCallback($arr, $parameter, $value): mixed
+    {
+        if (isset($arr[$parameter])) {
+            try {
+                if (is_array($arr[$parameter])) {
+
+                    $class = $arr[$parameter][0];
+                    $method = $arr[$parameter][1];
+                    $value = $class::$method($value);
+                } else {
+                    $value = $arr[$parameter]($value);
+                }
+            } catch (Exception $ex) {
+            }
+        }
+
+        return $value;
+    }
+
+    /**
+     * @param mixed $allParameters
+     * @param mixed $c
+     * @return mixed
+     */
+    private static function __getValue(mixed $allParameters, mixed $c): mixed
+    {
+        if (strpos($c, '.') !== false) {
+            $exp = explode('.', $c);
+
+            $value = $allParameters;
+            foreach ($exp as $o) {
+                $value = $value->$o;
+            }
+
+            return $value;
+        }
+
+        return $allParameters->$c ?? null;
+    }
+}

@@ -1,0 +1,1 @@
+    public function create({{ dto }} {{ dtoVar }}): {{ dto }};

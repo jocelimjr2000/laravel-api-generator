@@ -1,0 +1,10 @@
+    /**
+     * @param {{ typeId }} {{ idVar }}
+     * @return {{ dto }}|null
+     */
+    public function findById({{ typeId }} {{ idVar }}): ?{{ dto }}
+    {
+        {{ modelVar }} = {{ model }}::find({{ idVar }});
+
+        return $this->modelToDTO({{ modelVar }});
+    }
