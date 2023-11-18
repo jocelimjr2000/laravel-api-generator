@@ -1,336 +1,257 @@
-<?php /** @noinspection PhpUnusedPrivateMethodInspection */
+<?php
+/** @noinspection PhpUnusedPrivateMethodInspection */
+/** @noinspection PhpUnused */
 
 namespace JocelimJr\LaravelApiGenerator\Writers;
 
-use JocelimJr\LaravelApiGenerator\DataTransferObject\ObjGenDTO;
-use JocelimJr\LaravelApiGenerator\Helpers\FileHelper;
+use JocelimJr\LaravelApiGenerator\Classes\Column\ColumnBoolean;
+use JocelimJr\LaravelApiGenerator\Classes\Column\ColumnDate;
+use JocelimJr\LaravelApiGenerator\Classes\Column\ColumnDateTime;
+use JocelimJr\LaravelApiGenerator\Classes\Column\ColumnDateTimeTz;
+use JocelimJr\LaravelApiGenerator\Classes\Column\ColumnDecimal;
+use JocelimJr\LaravelApiGenerator\Classes\Column\ColumnDouble;
+use JocelimJr\LaravelApiGenerator\Classes\Column\ColumnFloat;
+use JocelimJr\LaravelApiGenerator\Classes\Column\ColumnId;
+use JocelimJr\LaravelApiGenerator\Classes\Column\ColumnInteger;
+use JocelimJr\LaravelApiGenerator\Classes\Column\ColumnString;
+use JocelimJr\LaravelApiGenerator\Classes\Column\ColumnTimestamp;
+use JocelimJr\LaravelApiGenerator\Classes\Column\ColumnUUID;
+use JocelimJr\LaravelApiGenerator\DataTransferObject\ColumnDTO;
+use JocelimJr\LaravelApiGenerator\DataTransferObject\JsonDefinitionsDTO;
 
 class CreateMigrationWriter extends AbstractWriter
 {
-
-    /**
-     * @param ObjGenDTO $objGenDTO
-     */
-    public function __construct(ObjGenDTO $objGenDTO)
+    public function __construct(JsonDefinitionsDTO $jsonDefinitionsDTO)
     {
-        parent::__construct($objGenDTO);
+        parent::__construct($jsonDefinitionsDTO);
     }
 
-    /**
-     * @return void
-     */
     public function write(): void
     {
-        $stub = FileHelper::getStubPath('migration.create');
+        $this->writeFile(
+            ['database', 'migrations', $this->jsonDefinitionsDTO->getFileName()->getMigration()],
+            $this->replaceStubParameters('migration.create')
+        );
+    }
 
+    protected function migrationColumns(): string
+    {
         $columns = '';
 
-        foreach($this->objGenDTO->getColumns() as $k => $column){
-            $_last = $k == count($this->objGenDTO->getColumns()) - 1;
-            $_call = 'column' . (isset($column->type) ? ucfirst($column->type) : 'String');
+        /**
+         * @var int $k
+         * @var ColumnDTO $column
+         */
+        foreach($this->jsonDefinitionsDTO->getColumns() as $k => $column){
+            $_last = $k == count($this->jsonDefinitionsDTO->getColumns()) - 1;
+            $_call = 'column' . ($column->getType() !== null ? ucfirst($column->getType()) : 'String');
 
             $columns .= $k == 0 ? '' : '            ';
             $columns .= $this->$_call($column);
 
-            if(isset($column->default)){
-                $columns .= $this->prepareDefaultValue($column);
+            if($column->getDefault()){
+
+                $type = $column->getType() ?? 'string';
+
+                $result = '->default(';
+
+                if($type == 'string'){
+                    $result .= "'" . $column->getDefault() . "'";
+                }
+
+                else if($type == 'boolean'){
+                    $result .= ($column->getDefault() === true ? 'true' : 'false');
+                }
+
+                else{
+                    $result .= $column->getDefault();
+                }
+
+                $columns .= $result . ')';
             }
 
-            if(isset($column->deletedAt) && $column->deletedAt === true){
-                $column->nullable = true;
-            }
-
-            if(isset($column->primary) && $column->primary === true) $columns .= '->primary()';
-            if(isset($column->autoIncrement) && $column->autoIncrement === true) $columns .= '->autoIncrement()';
-            if(isset($column->nullable) && $column->nullable === true && $column->type !== 'id' && (!isset($column->primary) || $column->primary !== true)) $columns .= '->nullable()';
-
-            if(
-                (!isset($column->primary) || $column->primary === false) &&
-                isset($column->unique) && $column->unique === true
-            ) $columns .= '->unique()';
+            if($column->isDeletedAt() === true) $column->setNullable(true);
+            if($column->isPrimary() === true) $columns .= '->primary()';
+            if($column->isAutoIncrement() === true) $columns .= '->autoIncrement()';
+            if($column->isNullable() === true && $column->getType() !== 'id' && $column->isPrimary() !== true) $columns .= '->nullable()';
+            if($column->isPrimary() === false && $column->isUnique() === true) $columns .= '->unique()';
 
             $columns .= ';' . ($_last ? '' : PHP_EOL);
         }
 
-        $this->addExtraReplaceParametersToReplace([
-            '{{ columns }}' => $columns,
-        ]);
-
-        $newMigrationFile = $this->objGenDTO->getPrefixDateMigration() . '_create_' . strtolower($this->objGenDTO->getApiName()) . '_table.php';
-
-        // Write
-        $this->writeFile(['database', 'migrations', $newMigrationFile], $this->replaceParameters($stub));
+        return $columns;
     }
 
     /**
      * @boolean
      *
-     * @param mixed $column
+     * @param ColumnBoolean $column
      * @return string
      */
-    private function columnBoolean(mixed $column): string
+    private function columnBoolean(ColumnBoolean $column): string
     {
-        return $this->mount('boolean', ["'" . $column->name . "'"]);
+        return '$table->boolean("' . $column->getName() . '")';
     }
 
     /**
      * @dateTimeTz
      *
-     * @param mixed $column
+     * @param ColumnDateTimeTz $column
      * @return string
      */
-    private function columnDateTimeTz(mixed $column): string
+    private function columnDateTimeTz(ColumnDateTimeTz $column): string
     {
-        $params = ["'" . $column->name . "'"];
-
-        if(isset($column->precision) && is_int($column->precision) && $column->precision > 0){
-            $params[] = $column->precision;
+        // Default state
+        if($column->getPrecision() == 0){
+            return '$table->dateTimeTz("' . $column->getName() . '")';
         }
 
-        return $this->mount('dateTimeTz', $params);
+        return '$table->dateTimeTz("' . $column->getName() . '", ' . $column->getPrecision() . ')';
     }
 
     /**
      * @dateTime
      *
-     * @param mixed $column
+     * @param ColumnDateTime $column
      * @return string
      */
-    private function columnDateTime(mixed $column): string
+    private function columnDateTime(ColumnDateTime $column): string
     {
-        $params = ["'" . $column->name . "'"];
-
-        if(isset($column->precision) && is_int($column->precision) && $column->precision > 0){
-            $params[] = $column->precision;
+        // Default state
+        if($column->getPrecision() == 0){
+            return '$table->dateTime("' . $column->getName() . '")';
         }
 
-        return $this->mount('dateTime', $params);
+        return '$table->dateTime("' . $column->getName() . '", ' . $column->getPrecision() . ')';
     }
 
     /**
      * @date
      *
-     * @param mixed $column
+     * @param ColumnDate $column
      * @return string
      */
-    private function columnDate(mixed $column): string
+    private function columnDate(ColumnDate $column): string
     {
-        return $this->mount('date', ["'" . $column->name . "'"]);
+        return '$table->date("' . $column->getName() . '")';
     }
 
     /**
      * @decimal
      *
-     * @param mixed $column
+     * @param ColumnDecimal $column
      * @return string
      */
-    private function columnDecimal(mixed $column): string
+    private function columnDecimal(ColumnDecimal $column): string
     {
-        $defaultTotal = '8';
-        $defaultPlaces = '2';
-        $defaultUnsigned = 'false';
+        // Default state
+        if($column->getTotal() == 8 && $column->getPlaces() == 2 && !$column->isUnsigned()){
+            return '$table->decimal("' . $column->getName() . '")';
+        }
 
-        return $this->mount('decimal', $this->getDoubleFloatParams($column, $defaultTotal, $defaultPlaces, $defaultUnsigned));
+        return '$table->decimal("' . $column->getName() . '", ' . $column->getTotal() . ', ' . $column->getPlaces() . ', ' . ($column->isUnsigned() ? 'true' : 'false') . ')';
     }
 
     /**
      * @double
      *
-     * @param mixed $column
+     * @param ColumnDouble $column
      * @return string
      */
-    private function columnDouble(mixed $column): string
+    private function columnDouble(ColumnDouble $column): string
     {
-        $defaultTotal = 'null';
-        $defaultPlaces = 'null';
-        $defaultUnsigned = 'false';
+        // Default state
+        if($column->getTotal() == null && $column->getPlaces() == null && !$column->isUnsigned()){
+            return '$table->double("' . $column->getName() . '")';
+        }
 
-        return $this->mount('double', $this->getDoubleFloatParams($column, $defaultTotal, $defaultPlaces, $defaultUnsigned));
+        return '$table->double("' . $column->getName() . '", ' . $column->getTotal() . ', ' . $column->getPlaces() . ', ' . ($column->isUnsigned() ? 'true' : 'false') . ')';
     }
 
     /**
      * @float
      *
-     * @param mixed $column
+     * @param ColumnFloat $column
      * @return string
      */
-    private function columnFloat(mixed $column): string
+    private function columnFloat(ColumnFloat $column): string
     {
-        $defaultTotal = '8';
-        $defaultPlaces = '2';
-        $defaultUnsigned = 'false';
+        // Default state
+        if($column->getTotal() == 8 && $column->getPlaces() == 2 && !$column->isUnsigned()){
+            return '$table->float("' . $column->getName() . '")';
+        }
 
-        return $this->mount('float', $this->getDoubleFloatParams($column, $defaultTotal, $defaultPlaces, $defaultUnsigned));
+        return '$table->float("' . $column->getName() . '", ' . $column->getTotal() . ', ' . $column->getPlaces() . ', ' . ($column->isUnsigned() ? 'true' : 'false') . ')';
     }
 
     /**
      * @id
      *
-     * @param mixed $column
+     * @param ColumnId $column
      * @return string
      */
-    private function columnId(mixed $column): string
+    private function columnId(ColumnId $column): string
     {
-        return $this->mount('id', ["'" . $column->name . "'"]);
+        return '$table->id(' . ($column->getName() !== 'id' ? "'" . $column->getName() . "'" : "") . ')';
     }
 
     /**
      * @integer
      *
-     * @param mixed $column
+     * @param ColumnInteger $column
      * @return string
      */
-    private function columnInteger(mixed $column): string
+    private function columnInteger(ColumnInteger $column): string
     {
-        $params = ["'" . $column->name . "'"];
-
-        $incAutoIncrement = false;
-        if(isset($column->autoIncrement) && $column->autoIncrement === true){
-            $incAutoIncrement = true;
-            $params[] = 'true';
+        // Default state
+        if(!$column->isAutoIncrement() && !$column->isUnsigned()){
+            return '$table->integer("' . $column->getName() . '")';
         }
 
-        if(isset($column->unsigned) && $column->unsigned === true){
-            if(!$incAutoIncrement){
-                $params[] = 'false';
-            }
-
-            $params[] = 'true';
-        }
-
-        return $this->mount('integer', $params);
+        return '$table->integer("' . $column->getName() . '", ' . ($column->isAutoIncrement() ? 'true' : 'false') . ', ' . ($column->isUnsigned() ? 'true' : 'false') . ')';
     }
 
     /**
      * @string
      *
-     * @param mixed $column
+     * @param ColumnString $column
      * @return string
      */
-    private function columnString(mixed $column): string
+    private function columnString(ColumnString $column): string
     {
-        $params = ["'" . $column->name . "'"];
-
-        if(isset($column->length)){
-            $params[] = $column->length;
+        // Default state
+        if($column->getLength() == null){
+            return '$table->string("' . $column->getName() . '")';
         }
 
-        return $this->mount('string', $params);
+        return '$table->string("' . $column->getName() . '", ' . $column->getLength() . ')';
     }
 
     /**
      * @timestamp
      *
-     * @param mixed $column
+     * @param ColumnTimestamp $column
      * @return string
      */
-    private function columnTimestamp(mixed $column): string
+    private function columnTimestamp(ColumnTimestamp $column): string
     {
-        $params = ["'" . $column->name . "'"];
-
-        if(isset($column->precision) && is_int($column->precision) && $column->precision > 0){
-            $params[] = $column->precision;
+        // Default state
+        if($column->getPrecision() == 0){
+            return '$table->timestamp("' . $column->getName() . '")';
         }
 
-        return $this->mount('timestamp', $params);
+        return '$table->timestamp("' . $column->getName() . '", ' . $column->getPrecision() . ')';
     }
 
     /**
      * @uuid
      *
-     * @param mixed $column
+     * @param ColumnUUID $column
      * @return string
      */
-    private function columnUuid(mixed $column): string
+    private function columnUuid(ColumnUUID $column): string
     {
-        return $this->mount('uuid', ["'" . $column->name . "'"]);
+        return '$table->uuid("' . $column->getName() . '")';
     }
 
-    /**
-     * @param mixed $column
-     * @return string
-     */
-    private function prepareDefaultValue(mixed $column): string
-    {
-        $type = $column->type ?? 'string';
-
-        $result = '->default(';
-
-        if($type == 'string'){
-            $result .= "'" . $column->default . "'";
-        }
-
-        else if($type == 'boolean'){
-            $result .= ($column->default === true ? 'true' : 'false');
-        }
-
-        else{
-            $result .= $column->default;
-        }
-
-        return $result . ')';
-    }
-
-    /**
-     * @param mixed $column
-     * @param string $defaultTotal
-     * @param string $defaultPlaces
-     * @param string $defaultUnsigned
-     * @return string[]
-     */
-    private function getDoubleFloatParams(mixed $column, string $defaultTotal = 'null', string $defaultPlaces = 'null', string $defaultUnsigned = 'false'): array
-    {
-        if(property_exists($column, 'total')){
-            $column->total = $column->total === null ? 'null' : (string) $column->total;
-        }else{
-            $column->total = $defaultTotal;
-        }
-
-        if(property_exists($column, 'places')){
-            $column->places = $column->places === null ? 'null' : (string) $column->places;
-        }else{
-            $column->places = $defaultPlaces;
-        }
-
-        if(property_exists($column, 'unsigned')){
-            $column->unsigned = $column->unsigned === false ? 'false' : 'true';
-        }else{
-            $column->unsigned = $defaultUnsigned;
-        }
-
-        $params = ["'" . $column->name . "'"];
-        $_pTotal = false;
-        $_pPlaces = false;
-
-        if ($column->total !== $defaultTotal) {
-            $_pTotal = true;
-            $params[] = $column->total;
-        }
-
-        if ($column->places !== $defaultPlaces) {
-            if (!$_pTotal) $params[] = $defaultTotal;
-
-            $_pPlaces = true;
-            $params[] = $column->places;
-        }
-
-        if ($column->unsigned !== $defaultUnsigned) {
-            if (!$_pTotal) $params[] = $defaultTotal;
-            if (!$_pPlaces) $params[] = $defaultPlaces;
-
-            $params[] = $column->unsigned;
-        }
-
-        return $params;
-    }
-
-    /**
-     * @param String $name
-     * @param array $params
-     * @return String
-     */
-    private function mount(String $name, array $params): String
-    {
-        return '$table->' . $name . '(' . implode(', ', $params). ')';
-    }
 }

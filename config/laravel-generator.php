@@ -11,11 +11,7 @@ return [
         'prefixDateMigration' => null,
         'table' => null,
         'columns' => [],
-        'primaryKey' => [
-            'name' => null,
-            'type' => null,
-            'alias' => null,
-        ],
+        'primaryKey' => 'id', // column name (string | array)
         'architecture' => [
             'service' => true,
             'repository' => true,
@@ -48,6 +44,7 @@ return [
             'dto' => null,
             'service' => null,
             'featureTest' => null,
+            'migration' => null,
         ],
         'writeApi' => [
             'findAll' => true,

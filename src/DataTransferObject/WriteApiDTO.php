@@ -2,6 +2,8 @@
 
 namespace JocelimJr\LaravelApiGenerator\DataTransferObject;
 
+use ReflectionClass;
+
 class WriteApiDTO extends AbstractDTO
 {
     private bool $findAll = true;
@@ -10,12 +12,28 @@ class WriteApiDTO extends AbstractDTO
     private bool $update = true;
     private bool $delete = true;
 
-    public function __construct()
+    public function __construct(object $data = null)
     {
-        $config = config('laravel-generator.default.writeApi');
+        if($data){
+            $reflectionClass = new ReflectionClass($this);
 
-        foreach($config as $p => $v){
-            $this->{$p} = $v;
+            foreach($reflectionClass->getProperties() as $p){
+                $n = $p->getName();
+
+                if(!isset($data->$n)){
+                    continue;
+                }
+
+                $setter = 'set' . ucfirst($p->getName());
+
+                $this->$setter($data->$n);
+            }
+        }else {
+            $config = config('laravel-generator.default.writeApi');
+
+            foreach ($config as $p => $v) {
+                $this->{$p} = $v;
+            }
         }
     }
 

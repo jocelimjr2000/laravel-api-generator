@@ -1,130 +1,86 @@
-<?php /** @noinspection SpellCheckingInspection */
+<?php
+/** @noinspection PhpUnused */
+/** @noinspection SpellCheckingInspection */
 
 namespace JocelimJr\LaravelApiGenerator\Writers;
 
-use JocelimJr\LaravelApiGenerator\DataTransferObject\ObjGenDTO;
-use JocelimJr\LaravelApiGenerator\Helpers\FileHelper;
+use JocelimJr\LaravelApiGenerator\DataTransferObject\ColumnDTO;
+use JocelimJr\LaravelApiGenerator\DataTransferObject\JsonDefinitionsDTO;
 
 class CreateModelWriter extends AbstractWriter
 {
+    private array $fillableList = [];
 
-    /**
-     * @param ObjGenDTO $objGenDTO
-     */
-    public function __construct(ObjGenDTO $objGenDTO)
+    public function __construct(JsonDefinitionsDTO $jsonDefinitionsDTO)
     {
-        parent::__construct($objGenDTO);
+        parent::__construct($jsonDefinitionsDTO);
     }
 
-    public function write()
+    public function write(): void
     {
-        $createdAt = 'null';
-        $updatedAt = 'null';
-        $deletedAt = null;
-        $primaryKey = '';
-        $fillable = '';
-        $fillableList = [];
-        $this->addReplaceImports('Illuminate\Database\Eloquent\Model');
-        $uses = [];
-        $usesStr = '';
-        $const = [];
-        $constStr = '';
-        $uuidLoaded = false;
+        $this->addImportsToReplace([
+            'Illuminate\Database\Eloquent\Model'
+        ]);
 
-        foreach($this->objGenDTO->getColumns() as $column){
+        $this->writeFile(
+            ['app', 'Models', $this->jsonDefinitionsDTO->getFileName()->getModel()],
+            $this->replaceStubParameters('model')
+        );
+    }
 
-            if(isset($column->type) && $column->type == 'uuid' && !$uuidLoaded){
+    protected function modelContent(): string
+    {
+        $modelContent = '';
 
-                if(class_exists('\Bindfy\BaseService\Traits\UsesUuid')){
-                    $this->addReplaceImports('Bindfy\BaseService\Traits\UsesUuid');
-                }else{
-                    $this->addReplaceImports('App\Traits\UsesUuid');
+        // Table ref
+        if($this->jsonDefinitionsDTO->getTable() !== null){
+            $modelContent .= '    protected $table = \'' . $this->jsonDefinitionsDTO->getTable() . '\';';
+        }
 
-                    if(!class_exists('\App\Traits\UsesUuid')) {
-                        $createUsesUUIDTraitWriter = new CreateUsesUUIDTraitWriter($this->objGenDTO);
-                        $createUsesUUIDTraitWriter->write();
-                    }
-                }
+        // Primary Key ref
+        if(
+            $this->jsonDefinitionsDTO->getPrimaryKey() !== null &&
+            $this->jsonDefinitionsDTO->getPrimaryKey()->getName() !== null &&
+            $this->jsonDefinitionsDTO->getPrimaryKey()->getName() !== 'id'
+        ){
+            $modelContent .= PHP_EOL;
+            $modelContent .= '    protected $primaryKey = \'' . $this->jsonDefinitionsDTO->getPrimaryKey()->getName() . '\';';
+        }
 
-                $uses[] = 'UsesUuid';
+        /** @var ColumnDTO $column */
+        foreach($this->jsonDefinitionsDTO->getColumns() as $column){
 
-                $uuidLoaded = true;
-            }
-
-            if((isset($column->primary) && $column->primary === true) || $column->type == 'id'){
-                $primaryKey = $column->name;
-
-                continue;
-            }
-
-            if(
-                $column->name == 'createdAt' ||
-                ( isset($column->alias) && $column->alias == 'createdAt' ) ||
-                ( isset($column->createdAt) && $column->createdAt === true )
-            ){
-                $const['CREATED_AT'] = $column->name;
-
-                continue;
-            }
-
-            if(
-                $column->name == 'updatedAt' ||
-                ( isset($column->alias) && $column->alias == 'updatedAt' ) ||
-                ( isset($column->updatedAt) && $column->updatedAt === true )
-            ){
-                $const['UPDATED_AT'] = $column->name;
-
-                continue;
-            }
-
-            if(
-                $column->name == 'deletedAt' ||
-                ( isset($column->alias) && $column->alias == 'deletedAt' ) ||
-                ( isset($column->deletedAt) && $column->deletedAt === true )
-            ){
-                $this->addReplaceImports('Illuminate\Database\Eloquent\SoftDeletes');
-                $uses[] = 'SoftDeletes';
-                $const['DELETED_AT'] = $column->name;
-
-                continue;
-            }
-
+            // Add to Fillable list
             if(!isset($column->fillable) || $column->fillable === true){
-                $fillableList[] = $column->name;
+                $this->fillableList[] = $column->getName();
             }
         }
 
-        if(count($fillableList) > 0){
-            $fillable = 'protected $fillable = [' . PHP_EOL;
+        $modelContent .= PHP_EOL . PHP_EOL;
+        $modelContent .= $this->fillableListToStr();
 
-            foreach($fillableList as $f){
+        return $modelContent;
+    }
+
+    /**
+     * Convert Fillable list to String
+     *
+     * @return string
+     */
+    private function fillableListToStr(): string
+    {
+        $fillable = '';
+
+        if(count($this->fillableList) > 0){
+            $fillable .= '    protected $fillable = [' . PHP_EOL;
+
+            foreach($this->fillableList as $f){
                 $fillable .= "        '$f'," . PHP_EOL;
             }
 
             $fillable .= '    ];';
         }
 
-        if(count($uses) > 0){
-            $usesStr = 'use ' . implode(', ', $uses) . ';' . PHP_EOL;
-        }
-
-        if(count($const) > 0){
-            foreach($const as $k => $v){
-                $constStr .= "    const $k = '$v';" . PHP_EOL;
-            }
-        }
-
-        $stub = FileHelper::getStubPath('model');
-
-        $this->addExtraReplaceParametersToReplace([
-            '{{ uses }}' => $usesStr,
-            '{{ const }}' => $constStr,
-            '{{ primaryKey }}' => $primaryKey,
-            '{{ fillable }}' => $fillable,
-        ]);
-
-        // Write
-        $this->writeFile(['app', 'Models', $this->objGenDTO->getModel()], $this->replaceParameters($stub));
+        return $fillable;
     }
-
 }

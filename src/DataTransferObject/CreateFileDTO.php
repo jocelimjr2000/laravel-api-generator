@@ -2,6 +2,8 @@
 
 namespace JocelimJr\LaravelApiGenerator\DataTransferObject;
 
+use ReflectionClass;
+
 class CreateFileDTO extends AbstractDTO
 {
     private bool $routes;
@@ -15,12 +17,28 @@ class CreateFileDTO extends AbstractDTO
     private bool $service;
     private bool $featureTest;
 
-    public function __construct()
+    public function __construct(object $data = null)
     {
-        $config = config('laravel-generator.default.createFile');
+        if($data){
+            $reflectionClass = new ReflectionClass($this);
 
-        foreach($config as $p => $v){
-            $this->{$p} = $v;
+            foreach($reflectionClass->getProperties() as $p){
+                $n = $p->getName();
+
+                if(!isset($data->$n)){
+                    continue;
+                }
+
+                $setter = 'set' . ucfirst($p->getName());
+
+                $this->$setter($data->$n);
+            }
+        }else {
+            $config = config('laravel-generator.default.createFile');
+
+            foreach ($config as $p => $v) {
+                $this->{$p} = $v;
+            }
         }
     }
 

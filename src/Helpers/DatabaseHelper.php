@@ -6,7 +6,7 @@ class DatabaseHelper
 {
 
     /**
-     * https://laravel.com/docs/9.x/migrations#available-column-types
+     * https://laravel.com/docs/10.x/migrations#available-column-types
      *
      * @return string[]
      */

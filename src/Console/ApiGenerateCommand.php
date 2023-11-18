@@ -2,51 +2,60 @@
 
 namespace JocelimJr\LaravelApiGenerator\Console;
 
+use Exception;
+use Illuminate\Console\ConfirmableTrait;
+use Illuminate\Contracts\Filesystem\FileNotFoundException;
+use JocelimJr\LaravelApiGenerator\DataTransferObject\JsonDefinitionsDTO;
 use JocelimJr\LaravelApiGenerator\Service\GeneratorService;
-use Illuminate\Console\GeneratorCommand;
-use Illuminate\Filesystem\Filesystem;
+use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
+use function Laravel\Prompts\multiselect;
 
-class ApiGenerateCommand extends GeneratorCommand
+class ApiGenerateCommand extends Command
 {
-    protected $name = 'api:generate';
+    use ConfirmableTrait;
 
-    protected static $defaultName = 'api:generate';
+    protected $signature = 'api:generate';
 
-    protected $description = 'Create basic api';
-
-    protected $type = 'Api';
+    protected $description = 'Generate Files';
 
     protected GeneratorService $generatorService;
 
-    public function __construct(Filesystem $files)
+    public function __construct()
     {
-        parent::__construct($files);
+        parent::__construct();
 
         $this->generatorService = app(GeneratorService::class);
     }
 
-    public function handle()
+    /**
+     * @throws FileNotFoundException
+     * @throws Exception
+     */
+    public function handle(): void
     {
-        $path = storage_path('api');
-
-        if(!File::exists($path)) return null;
+        $path = config('laravel-generator.path');
 
         $files = File::allFiles($path);
 
+        $modules = [];
+
         foreach($files as $file){
-            $this->generatorService->generate(json_decode($file->getContents()));
+            $modules[] = $file->getFilename();
         }
-    }
 
-    protected function getStub()
-    {
-        return null;
-    }
+        $modulesToCreate = multiselect(
+            label: 'Choose which module you want to create',
+            options: $modules
+        );
 
-    protected function getArguments()
-    {
-        return [];
+        foreach($modulesToCreate as $module){
+            $jsonString = File::get(config('laravel-generator.path') . DIRECTORY_SEPARATOR . $module);
+
+            $jsonDefinitionsDTO = new JsonDefinitionsDTO(json_decode($jsonString));
+
+            $this->generatorService->generate($jsonDefinitionsDTO);
+        }
     }
 
 }

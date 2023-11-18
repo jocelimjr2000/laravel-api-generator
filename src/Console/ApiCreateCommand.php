@@ -2,14 +2,18 @@
 
 namespace JocelimJr\LaravelApiGenerator\Console;
 
+use JocelimJr\LaravelApiGenerator\Classes\Column\ColumnId;
+use JocelimJr\LaravelApiGenerator\DataTransferObject\ColumnDTO;
 use JocelimJr\LaravelApiGenerator\DataTransferObject\JsonDefinitionsDTO;
 use Composer\InstalledVersions;
 use Illuminate\Console\ConfirmableTrait;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 use Exception;
-use Illuminate\Support\Facades\Validator;
 use Nwidart\Modules\Facades\Module;
+use function Laravel\Prompts\confirm;
+use function Laravel\Prompts\select;
+use function Laravel\Prompts\text;
 
 class ApiCreateCommand extends Command
 {
@@ -25,29 +29,54 @@ class ApiCreateCommand extends Command
             return;
         }
 
-        $apiName = $this->askWithValidation('What should the API be named?', ['required'], ['required' => 'The apiName is required']);
-        $table = $this->ask('What is the table name?', strtolower($apiName));
-        $module = null;
-
-        if (InstalledVersions::isInstalled(config('laravel-generator.packages.modules'))) {
-            $modules = array_merge([null => 'none'], Module::all());
-            $module = $this->choice('The package `' . config('laravel-generator.packages.modules') . '` has been detected in the project. Would you like to assign this API to any module?', $modules) ?: null;
-        }
+        $apiName = text(
+            label: trans('laravel-generator::api-create.apiName'),
+            required: trans('laravel-generator::api-create.apiNameRequired')
+        );
 
         $jsonFile = strtolower($apiName) . '.json';
         $file = config('laravel-generator.path') . DIRECTORY_SEPARATOR . $jsonFile;
         $create = true;
 
         if(File::exists($file)){
-            $create = $this->confirm("The file `$jsonFile` already exists, do you want to overwrite it?");
+            $create = confirm(trans('laravel-generator::api-create.jsonFileExists', ['jsonFile' => $jsonFile]), false);
         }
 
         if($create) {
+    //        $table = text(
+    //            label: 'What is the table name?',
+    //            default: strtolower($apiName)
+    //        );
+
+            $module = null;
+
+            if (InstalledVersions::isInstalled(config('laravel-generator.packages.modules'))) {
+                $modules = array_merge([null => 'none'], Module::all());
+
+                $module = select(
+                    label: trans('laravel-generator::api-create.modulesPackage', ['package' => config('laravel-generator.packages.modules')]),
+                    options: $modules,
+                ) ?: null;
+            }
+
+            $pk = select(
+                label: trans('laravel-generator::api-create.choosePk'),
+                options: [
+                    'null' => 'none',
+                    'auto-increment',
+                    'uuid',
+                ],
+            ) ?: null;
+
             try {
+                $pkColumn = new ColumnId();
+                $pkColumn->setName('id');
+
                 $jsonDefinitionsDTO = new JsonDefinitionsDTO();
                 $jsonDefinitionsDTO->setApiName($apiName)
-                                    ->setTable($table)
-                                    ->setModule($module);
+                                    ->setModule($module)
+                                    ->setColumns([$pkColumn])
+                                    ->loadDataByName();
 
                 if(!File::isDirectory(config('laravel-generator.path'))){
                     File::makeDirectory(config('laravel-generator.path'), 0777, true, true);
@@ -61,22 +90,4 @@ class ApiCreateCommand extends Command
         }
     }
 
-    public function askWithValidation(string $message, array $rules = [], array $messages = [], string $name = 'value') {
-        $answer = $this->ask($message);
-        $validator = Validator::make(
-            [$name => $answer],
-            [$name => $rules],
-            $messages
-        );
-
-        if ($validator->passes()) {
-            return $answer;
-        }
-
-        foreach ($validator->errors()->all() as $error) {
-            $this->error($error);
-        }
-
-        return $this->askWithValidation($message, $rules, $messages, $name);
-    }
 }

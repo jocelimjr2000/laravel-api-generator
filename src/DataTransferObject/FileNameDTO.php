@@ -2,6 +2,8 @@
 
 namespace JocelimJr\LaravelApiGenerator\DataTransferObject;
 
+use ReflectionClass;
+
 class FileNameDTO extends AbstractDTO
 {
     private ?string $routes = null;
@@ -17,13 +19,30 @@ class FileNameDTO extends AbstractDTO
     private ?string $dto = null;
     private ?string $service = null;
     private ?string $featureTest = null;
+    private ?string $migration = null;
 
-    public function __construct()
+    public function __construct(object $data = null)
     {
-        $config = config('laravel-generator.default.fileName');
+        if($data){
+            $reflectionClass = new ReflectionClass($this);
 
-        foreach($config as $p => $v){
-            $this->{$p} = $v;
+            foreach($reflectionClass->getProperties() as $p){
+                $n = $p->getName();
+
+                if(!isset($data->$n)){
+                    continue;
+                }
+
+                $setter = 'set' . ucfirst($p->getName());
+
+                $this->$setter($data->$n);
+            }
+        }else {
+            $config = config('laravel-generator.default.fileName');
+
+            foreach ($config as $p => $v) {
+                $this->{$p} = $v;
+            }
         }
     }
 
@@ -93,8 +112,10 @@ class FileNameDTO extends AbstractDTO
         return $this;
     }
 
-    public function getModel(): ?string
+    public function getModel(bool $variableMode = false): ?string
     {
+        if($variableMode) return '$' . lcfirst($this->model);
+
         return $this->model;
     }
 
@@ -137,8 +158,10 @@ class FileNameDTO extends AbstractDTO
         return $this;
     }
 
-    public function getDto(): ?string
+    public function getDto(bool $variableMode = false): ?string
     {
+        if($variableMode) return '$' . lcfirst($this->dto);
+
         return $this->dto;
     }
 
@@ -167,6 +190,17 @@ class FileNameDTO extends AbstractDTO
     public function setFeatureTest(?string $featureTest): FileNameDTO
     {
         $this->featureTest = $featureTest;
+        return $this;
+    }
+
+    public function getMigration(): ?string
+    {
+        return $this->migration;
+    }
+
+    public function setMigration(?string $migration): FileNameDTO
+    {
+        $this->migration = $migration;
         return $this;
     }
 

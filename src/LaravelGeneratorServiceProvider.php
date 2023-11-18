@@ -20,6 +20,8 @@ class LaravelGeneratorServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->loadConfig();
+
+        $this->loadTranslationsFrom(__DIR__.'/../lang', 'laravel-generator');
     }
 
     private function loadConfig(): void

@@ -2,193 +2,99 @@
 
 namespace JocelimJr\LaravelApiGenerator\Writers;
 
-use JocelimJr\LaravelApiGenerator\DataTransferObject\ObjGenDTO;
-use JocelimJr\LaravelApiGenerator\Helpers\Console;
+use JocelimJr\LaravelApiGenerator\DataTransferObject\JsonDefinitionsDTO;
+use JocelimJr\LaravelApiGenerator\Helpers\FileHelper;
 use JocelimJr\LaravelApiGenerator\Helpers\ParametersHelper;
 use JocelimJr\LaravelApiGenerator\Helpers\PathHelper;
 
-abstract class AbstractWriter
+abstract class AbstractWriter extends AbstractReplace
 {
-    protected ?ObjGenDTO $objGenDTO = null;
-    private array $allParametersToReplace = [];
-    private array $replaceImports = [];
-    private string $replaceConstruct = '';
-    private string $replaceParameters = '';
-    private string $replaceMethods = '';
-
-    protected function addExtraReplaceParametersToReplace(array $parameters): void
+    public function __construct(JsonDefinitionsDTO $jsonDefinitionsDTO)
     {
-        foreach($parameters as $k => $v){
-            $this->allParametersToReplace[$k] = $v;
-        }
+        parent::__construct($jsonDefinitionsDTO);
     }
 
-    protected function addReplaceImports(string|array $import): void
+    abstract function write(): void;
+
+    protected function addImportsToReplace(string|array $import): void
     {
         if(is_array($import)){
             foreach ($import as $i){
-                $this->replaceImports[] = $i;
+                $this->importsToReplace[] = $i;
             }
         }else{
-            $this->replaceImports[] = $import;
-        }
-
-        $this->updateAllParametersToReplace();
-    }
-
-    protected function setReplaceImports(array $replaceImports): void
-    {
-        $this->replaceImports = $replaceImports;
-        $this->updateAllParametersToReplace();
-    }
-
-    protected function setReplaceConstruct(string $replaceConstruct): void
-    {
-        $this->replaceConstruct = $replaceConstruct;
-        $this->updateAllParametersToReplace();
-    }
-
-    protected function setReplaceParameters(string $replaceParameters): void
-    {
-        $this->replaceParameters = $replaceParameters;
-        $this->updateAllParametersToReplace();
-    }
-
-    protected function setReplaceMethods(string $replaceMethods): void
-    {
-        $this->replaceMethods = $replaceMethods;
-        $this->updateAllParametersToReplace();
-    }
-
-    public function __construct(?ObjGenDTO $objGenDTO = null)
-    {
-        $this->objGenDTO = $objGenDTO;
-
-        $this->updateAllParametersToReplace();
-    }
-
-    private function updateAllParametersToReplace(): void
-    {
-        if($this->objGenDTO !== null) {
-            $this->allParametersToReplace = [
-                '{{ modelSettersValues }}' => $this->createSetterValueModelColumns(),
-                '{{ modelSettersValuesDTO }}' => $this->createSetterValueModelColumns(true),
-                '{{ arrayForModel }}' => $this->createArrayForModel(),
-                '{{ imports }}' => $this->loadImports(),
-                '{{ controller }}' => $this->objGenDTO->getController(),
-                '{{ construct }}' => $this->replaceConstruct,
-                '{{ parameters }}' => $this->replaceParameters,
-                '{{ methods }}' => $this->replaceMethods,
-                '{{ dto }}' => $this->objGenDTO->getDto(),
-                '{{ dtoVar }}' => $this->objGenDTO->getDto(true),
-                '{{ dtoSettersValues }}' => $this->createDTOSettersValues($this->objGenDTO->getModel(true)),
-                '{{ formCreateRequest }}' => $this->objGenDTO->getFormCreateRequest(),
-                '{{ formUpdateRequest }}' => $this->objGenDTO->getFormUpdateRequest(),
-                '{{ formDeleteRequest }}' => $this->objGenDTO->getFormDeleteRequest(),
-                '{{ idParameter }}' => $this->objGenDTO->getIdParameterMode(),
-                '{{ idVar }}' => $this->objGenDTO->getIdVariableMode(),
-                '{{ idName }}' => $this->objGenDTO->getIdName(),
-                '{{ idGetter }}' => $this->objGenDTO->getIdGetterMode(),
-                '{{ mapper }}' => $this->objGenDTO->getMapper(),
-                '{{ model }}' => $this->objGenDTO->getModel(),
-                '{{ modelVar }}' => $this->objGenDTO->getModel(true),
-                '{{ moduleName }}' => $this->objGenDTO->getApiName(),
-                '{{ prefix }}' => $this->objGenDTO->getApiPrefix(),
-                '{{ repository }}' => $this->objGenDTO->getRepository(),
-                '{{ repositoryVar }}' => $this->objGenDTO->getRepositoryVariableMode(),
-                '{{ repositoryParameter }}' => $this->objGenDTO->getRepositoryParameterMode(),
-                '{{ repositoryInterface }}' => $this->objGenDTO->getRepositoryInterface(),
-                '{{ service }}' => $this->objGenDTO->getService(),
-                '{{ serviceVar }}' => $this->objGenDTO->getServiceVariableMode(),
-                '{{ serviceParameter }}' => $this->objGenDTO->getServiceParameterMode(),
-                '{{ serviceOrRepository }}' => lcfirst($this->objGenDTO->isServiceLayer() ? $this->objGenDTO->getService() : $this->objGenDTO->getRepository()),
-                '{{ table }}' => $this->objGenDTO->getTable(),
-                '{{ test }}' => $this->objGenDTO->getFeatureTest(),
-                '{{ typeId }}' => $this->objGenDTO->getIdType(),
-            ];
+            $this->importsToReplace[] = $import;
         }
     }
 
-    /**
-     * @return string
-     */
-    protected function loadImports(): string
+//    private function refreshParametersToReplace(): void
+//    {
+//        if($this->jsonDefinitionsDTO !== null) {
+//            $this->parametersToReplace = [
+//                'imports' => $this->importsToStr(),
+//                'model' => $this->jsonDefinitionsDTO->getFileName()->getModel(),
+//                'modelVar' => $this->jsonDefinitionsDTO->getFileName()->getModel(true),
+//                'primaryKey' => $this->jsonDefinitionsDTO->getPrimaryKey()->getName(),
+//                'table' => $this->jsonDefinitionsDTO->getTable(),
+//
+////                '{{ migrationColumns }}' => $this->jsonDefinitionsDTO->getTable(),
+////                '{{ modelSettersValues }}' => $this->createSetterValueModelColumns(),
+////                '{{ modelSettersValuesDTO }}' => $this->createSetterValueModelColumns(true),
+////                '{{ arrayForModel }}' => $this->createArrayForModel(),
+////                '{{ imports }}' => $this->loadImports(),
+////                '{{ controller }}' => $this->jsonDefinitionsDTO->getFileName()->getController(),
+////                '{{ construct }}' => $this->replaceConstruct,
+////                '{{ parameters }}' => $this->replaceParameters,
+////                '{{ methods }}' => $this->replaceMethods,
+////                '{{ dto }}' => $this->jsonDefinitionsDTO->getFileName()->getDto(),
+////                '{{ dtoVar }}' => $this->jsonDefinitionsDTO->getFileName()->getDto(true),
+////                '{{ dtoSettersValues }}' => $this->createDTOSettersValues($this->jsonDefinitionsDTO->getFileName()->getModel(true)),
+////                '{{ formCreateRequest }}' => $this->jsonDefinitionsDTO->getFormCreateRequest(),
+////                '{{ formUpdateRequest }}' => $this->jsonDefinitionsDTO->getFormUpdateRequest(),
+////                '{{ formDeleteRequest }}' => $this->jsonDefinitionsDTO->getFormDeleteRequest(),
+////                '{{ idParameter }}' => $this->jsonDefinitionsDTO->getIdParameterMode(),
+////                '{{ idVar }}' => $this->jsonDefinitionsDTO->getIdVariableMode(),
+////                '{{ idName }}' => $this->jsonDefinitionsDTO->getIdName(),
+////                '{{ idGetter }}' => $this->jsonDefinitionsDTO->getIdGetterMode(),
+////                '{{ mapper }}' => $this->jsonDefinitionsDTO->getMapper(),
+////                '{{ moduleName }}' => $this->jsonDefinitionsDTO->getApiName(),
+////                '{{ prefix }}' => $this->jsonDefinitionsDTO->getApiPrefix(),
+////                '{{ repository }}' => $this->jsonDefinitionsDTO->getRepository(),
+////                '{{ repositoryVar }}' => $this->jsonDefinitionsDTO->getRepositoryVariableMode(),
+////                '{{ repositoryParameter }}' => $this->jsonDefinitionsDTO->getRepositoryParameterMode(),
+////                '{{ repositoryInterface }}' => $this->jsonDefinitionsDTO->getRepositoryInterface(),
+////                '{{ service }}' => $this->jsonDefinitionsDTO->getService(),
+////                '{{ serviceVar }}' => $this->jsonDefinitionsDTO->getServiceVariableMode(),
+////                '{{ serviceParameter }}' => $this->jsonDefinitionsDTO->getServiceParameterMode(),
+////                '{{ serviceOrRepository }}' => lcfirst($this->jsonDefinitionsDTO->isServiceLayer() ? $this->jsonDefinitionsDTO->getService() : $this->jsonDefinitionsDTO->getRepository()),
+////                '{{ table }}' => $this->jsonDefinitionsDTO->getTable(),
+////                '{{ test }}' => $this->jsonDefinitionsDTO->getFeatureTest(),
+////                '{{ typeId }}' => $this->jsonDefinitionsDTO->getIdType(),
+//            ];
+//        }
+//    }
+
+    protected function replaceStubParameters(string $stub): string
     {
-        $str = '';
+        $content = FileHelper::getStubPath($stub);
 
-        foreach($this->replaceImports as $k => $v){
-            $str .= 'use ' . $v . ';' . (($k < count($this->replaceImports) - 1) ? PHP_EOL : '');
-        }
-
-        return $str;
+        return $this->replaceParameters($content);
     }
 
-    /**
-     * @param array $list
-     * @param string $prefix
-     * @param string $suffix
-     * @param bool $breakLastLine
-     * @return string
-     */
-    protected function loadList(array $list, string $prefix = '', string $suffix = ';', bool $breakLastLine = false): string
-    {
-        $str = '';
-
-        foreach($list as $k => $v){
-            $str .= $prefix . $v . $suffix . (($k < count($list) - 1) ? PHP_EOL : '');
-        }
-
-        if($breakLastLine) {
-            $str .= PHP_EOL;
-        }
-
-        return $str;
-    }
-
-    /**
-     * @param string $content
-     * @return string
-     */
     protected function replaceParameters(string $content): string
     {
-        foreach($this->allParametersToReplace as $k => $v){
-            $content = str_replace($k, $v, $content);
-        }
-
         $allParameters = ParametersHelper::getBetween($content, "{{ ", " }}");
 
         if(count($allParameters) > 0){
-            $paramsNotFound = [];
-
             foreach($allParameters as $p){
-                $p = "{{ $p }}";
-
-                if(!isset($this->allParametersToReplace[$p])){
-                    $paramsNotFound[] = $p;
-                }
-            }
-
-            if(count($paramsNotFound) > 0){
-                Console::log(array_merge(['-- Invalid parameters --'], $paramsNotFound), 'black', true, 'red');
-                die();
+                $newValue = $this->$p();
+                $content = str_replace("{{ $p }}", $newValue, $content);
             }
 
             return $this->replaceParameters($content);
         }
 
-        $this->clear();
-
         return $content;
-    }
-
-    private function clear(): void
-    {
-        $this->allParametersToReplace = [];
-        $this->replaceImports = [];
-        $this->replaceConstruct = '';
-        $this->replaceParameters = '';
-        $this->replaceMethods = '';
-        $this->updateAllParametersToReplace();
     }
 
     protected function writeFile(array $createFile, string $content, string $ext = '.php'): void
@@ -207,62 +113,11 @@ abstract class AbstractWriter
 
         $saved_file = file_put_contents($newFile, $content);
 
-        if (!($saved_file === false || $saved_file == -1)) {
-            $this->objGenDTO->addCreatedFile($newFile);
-        }else{
-            $this->objGenDTO->addError('Error creating file: ' . $newFile);
-        }
+//        if (!($saved_file === false || $saved_file == -1)) {
+//            $this->jsonDefinitionsDTO->addCreatedFile($newFile);
+//        }else{
+//            $this->jsonDefinitionsDTO->addError('Error creating file: ' . $newFile);
+//        }
     }
 
-    private function createDTOSettersValues(string $parameterModel): string
-    {
-        $columns = '';
-        foreach ($this->objGenDTO->getColumns() as $column) {
-            $_param = ($column->alias ?? $column->name);
-            $columns .= '        {{ dtoVar }}->set' . ucfirst($_param) . '(' . $parameterModel . '->' . $column->name . ');' . PHP_EOL ;
-        }
-
-        return $columns;
-    }
-
-    private function createArrayForModel(): string
-    {
-        $databaseColumns = '';
-        foreach ($this->objGenDTO->getColumns() as $column) {
-            if(
-                $column->type == 'id' ||
-                (isset($column->primary) && $column->primary === true) ||
-                (isset($column->createdAt) && $column->createdAt === true) ||
-                (isset($column->updatedAt) && $column->updatedAt === true) ||
-                (isset($column->deletedAt) && $column->deletedAt === true)
-            ) continue;
-
-            $databaseColumns .= '            \'' . $column->name . '\' => $request->' . ($column->alias ?? $column->name) . ',' . PHP_EOL ;
-        }
-
-        return $databaseColumns;
-    }
-
-    private function createSetterValueModelColumns(bool $dtoMode = false): string
-    {
-        $columns = '';
-        foreach ($this->objGenDTO->getColumns() as $column) {
-            if(
-                $column->type == 'id' ||
-                (isset($column->primary) && $column->primary === true) ||
-                (isset($column->createdAt) && $column->createdAt === true) ||
-                (isset($column->updatedAt) && $column->updatedAt === true)
-            ) continue;
-
-            if($dtoMode){
-                $_value = '{{ dtoVar }}->get' . (ucfirst($column->alias) ?? $column->name) . '();';
-            }else{
-                $_value = '$request->' . ($column->alias ?? $column->name);
-            }
-
-            $columns .= '        {{ modelVar }}->' . $column->name . ' = ' . $_value . ';' . PHP_EOL ;
-        }
-
-        return $columns;
-    }
 }

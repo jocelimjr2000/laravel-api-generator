@@ -2,6 +2,8 @@
 
 namespace JocelimJr\LaravelApiGenerator\DataTransferObject;
 
+use ReflectionClass;
+
 class ArchitectureDTO extends AbstractDTO
 {
     private bool $service;
@@ -9,12 +11,28 @@ class ArchitectureDTO extends AbstractDTO
     private bool $mapper;
     private bool $dto;
 
-    public function __construct()
+    public function __construct(object $data = null)
     {
-        $config = config('laravel-generator.default.architecture');
+        if($data){
+            $reflectionClass = new ReflectionClass($this);
 
-        foreach($config as $p => $v){
-            $this->{$p} = $v;
+            foreach($reflectionClass->getProperties() as $p){
+                $n = $p->getName();
+
+                if(!isset($data->$n)){
+                    continue;
+                }
+
+                $setter = 'set' . ucfirst($p->getName());
+
+                $this->$setter($data->$n);
+            }
+        }else {
+            $config = config('laravel-generator.default.architecture');
+
+            foreach ($config as $p => $v) {
+                $this->{$p} = $v;
+            }
         }
     }
 

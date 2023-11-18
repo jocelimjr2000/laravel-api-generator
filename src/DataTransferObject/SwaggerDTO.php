@@ -2,17 +2,35 @@
 
 namespace JocelimJr\LaravelApiGenerator\DataTransferObject;
 
+use ReflectionClass;
+
 class SwaggerDTO extends AbstractDTO
 {
     private bool $generate;
     private array $tags;
 
-    public function __construct()
+    public function __construct(object $data = null)
     {
-        $config = config('laravel-generator.default.swagger');
+        if($data){
+            $reflectionClass = new ReflectionClass($this);
 
-        foreach($config as $p => $v){
-            $this->{$p} = $v;
+            foreach($reflectionClass->getProperties() as $p){
+                $n = $p->getName();
+
+                if(!isset($data->$n)){
+                    continue;
+                }
+
+                $setter = 'set' . ucfirst($p->getName());
+
+                $this->$setter($data->$n);
+            }
+        }else{
+            $config = config('laravel-generator.default.swagger');
+
+            foreach($config as $p => $v){
+                $this->{$p} = $v;
+            }
         }
     }
 

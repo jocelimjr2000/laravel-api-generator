@@ -26,8 +26,7 @@ class PathHelper
         }
 
         return implode('', [
-            rtrim($GLOBALS['LARAVEL_GENERATOR_BASE_PATH'] , '\/'),
-            rtrim($GLOBALS['LARAVEL_GENERATOR_PATH'] , '\/'),
+            getcwd(),
             rtrim($_p, '\/')
         ]);
     }
