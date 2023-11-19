@@ -1,15 +1,28 @@
 <?php
 
-namespace JocelimJr\LaravelApiGenerator\Classes\Column;
+namespace JocelimJr\LaravelApiGenerator\DataTransferObject\Column;
 
 class ColumnDateTimeTz extends AbstractColumn
 {
     public function __construct(object $data = null)
     {
         parent::__construct($data);
+        $this->setType('dateTimeTz');
     }
 
+    private ?string $name = null;
     private int $precision = 0;
+
+    public function getName(): ?string
+    {
+        return $this->name;
+    }
+
+    public function setName(?string $name): ColumnDateTimeTz
+    {
+        $this->name = $name;
+        return $this;
+    }
 
     public function getPrecision(): int
     {

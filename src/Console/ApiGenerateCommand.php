@@ -5,7 +5,7 @@ namespace JocelimJr\LaravelApiGenerator\Console;
 use Exception;
 use Illuminate\Console\ConfirmableTrait;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
-use JocelimJr\LaravelApiGenerator\DataTransferObject\JsonDefinitionsDTO;
+use JocelimJr\LaravelApiGenerator\Mappers\JsonDefinitionsMapper;
 use JocelimJr\LaravelApiGenerator\Service\GeneratorService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
@@ -52,7 +52,7 @@ class ApiGenerateCommand extends Command
         foreach($modulesToCreate as $module){
             $jsonString = File::get(config('laravel-generator.path') . DIRECTORY_SEPARATOR . $module);
 
-            $jsonDefinitionsDTO = new JsonDefinitionsDTO(json_decode($jsonString));
+            $jsonDefinitionsDTO = JsonDefinitionsMapper::json2Class($jsonString);
 
             $this->generatorService->generate($jsonDefinitionsDTO);
         }

@@ -1,18 +1,31 @@
 <?php
 
-namespace JocelimJr\LaravelApiGenerator\Classes\Column;
+namespace JocelimJr\LaravelApiGenerator\DataTransferObject\Column;
 
 class ColumnInteger extends AbstractColumn
 {
     public function __construct(object $data = null)
     {
         parent::__construct($data);
+        $this->setType('integer');
     }
 
+    private ?string $name = null;
     private bool $autoIncrement = false;
     private bool $unsigned = false;
 
-    public function isAutoIncrement(): bool
+    public function getName(): ?string
+    {
+        return $this->name;
+    }
+
+    public function setName(?string $name): ColumnInteger
+    {
+        $this->name = $name;
+        return $this;
+    }
+
+    public function autoIncrement(): bool
     {
         return $this->autoIncrement;
     }

@@ -1,17 +1,30 @@
 <?php
 
-namespace JocelimJr\LaravelApiGenerator\Classes\Column;
+namespace JocelimJr\LaravelApiGenerator\DataTransferObject\Column;
 
 class ColumnFloat extends AbstractColumn
 {
     public function __construct(object $data = null)
     {
         parent::__construct($data);
+        $this->setType('float');
     }
 
+    private ?string $name = null;
     private int $total = 8;
     private int $places = 2;
     private bool $unsigned = false;
+
+    public function getName(): ?string
+    {
+        return $this->name;
+    }
+
+    public function setName(?string $name): ColumnFloat
+    {
+        $this->name = $name;
+        return $this;
+    }
 
     public function getTotal(): int
     {

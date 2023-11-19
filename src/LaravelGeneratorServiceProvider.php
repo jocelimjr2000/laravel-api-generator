@@ -4,9 +4,6 @@ namespace JocelimJr\LaravelApiGenerator;
 
 use JocelimJr\LaravelApiGenerator\Console\ApiCreateCommand;
 use JocelimJr\LaravelApiGenerator\Console\ApiGenerateCommand;
-use JocelimJr\LaravelApiGenerator\Console\DataTransferObjectMakeCommand;
-use JocelimJr\LaravelApiGenerator\Console\InterfaceMakeCommand;
-use JocelimJr\LaravelApiGenerator\Console\RepositoryMakeCommand;
 use Illuminate\Support\ServiceProvider;
 
 class LaravelGeneratorServiceProvider extends ServiceProvider
@@ -36,9 +33,6 @@ class LaravelGeneratorServiceProvider extends ServiceProvider
     private function registerCommands(): void
     {
         $commands = [
-            'RepositoryMake' => 'command.repository.make',
-            'InterfaceMake' => 'command.interface.make',
-            'DataTransferObjectMake' => 'command.dto.make',
             'ApiGenerate' => 'command.api.generate',
             'ApiCreate' => 'command.api.create',
         ];
@@ -50,27 +44,6 @@ class LaravelGeneratorServiceProvider extends ServiceProvider
         }
 
         $this->commands(array_values($commands));
-    }
-
-    private function registerRepositoryMakeCommand(): void
-    {
-        $this->app->singleton('command.repository.make', function ($app) {
-            return new RepositoryMakeCommand($app['files']);
-        });
-    }
-
-    private function registerInterfaceMakeCommand(): void
-    {
-        $this->app->singleton('command.interface.make', function ($app) {
-            return new InterfaceMakeCommand($app['files']);
-        });
-    }
-
-    private function registerDataTransferObjectMakeCommand(): void
-    {
-        $this->app->singleton('command.dto.make', function ($app) {
-            return new DataTransferObjectMakeCommand($app['files']);
-        });
     }
 
     private function registerApiGenerateCommand(): void

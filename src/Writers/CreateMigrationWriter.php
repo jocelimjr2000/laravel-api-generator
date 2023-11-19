@@ -4,19 +4,21 @@
 
 namespace JocelimJr\LaravelApiGenerator\Writers;
 
-use JocelimJr\LaravelApiGenerator\Classes\Column\ColumnBoolean;
-use JocelimJr\LaravelApiGenerator\Classes\Column\ColumnDate;
-use JocelimJr\LaravelApiGenerator\Classes\Column\ColumnDateTime;
-use JocelimJr\LaravelApiGenerator\Classes\Column\ColumnDateTimeTz;
-use JocelimJr\LaravelApiGenerator\Classes\Column\ColumnDecimal;
-use JocelimJr\LaravelApiGenerator\Classes\Column\ColumnDouble;
-use JocelimJr\LaravelApiGenerator\Classes\Column\ColumnFloat;
-use JocelimJr\LaravelApiGenerator\Classes\Column\ColumnId;
-use JocelimJr\LaravelApiGenerator\Classes\Column\ColumnInteger;
-use JocelimJr\LaravelApiGenerator\Classes\Column\ColumnString;
-use JocelimJr\LaravelApiGenerator\Classes\Column\ColumnTimestamp;
-use JocelimJr\LaravelApiGenerator\Classes\Column\ColumnUUID;
-use JocelimJr\LaravelApiGenerator\DataTransferObject\ColumnDTO;
+use JocelimJr\LaravelApiGenerator\DataTransferObject\Column\AbstractColumn;
+use JocelimJr\LaravelApiGenerator\DataTransferObject\Column\ColumnBoolean;
+use JocelimJr\LaravelApiGenerator\DataTransferObject\Column\ColumnDate;
+use JocelimJr\LaravelApiGenerator\DataTransferObject\Column\ColumnDateTime;
+use JocelimJr\LaravelApiGenerator\DataTransferObject\Column\ColumnDateTimeTz;
+use JocelimJr\LaravelApiGenerator\DataTransferObject\Column\ColumnDecimal;
+use JocelimJr\LaravelApiGenerator\DataTransferObject\Column\ColumnDouble;
+use JocelimJr\LaravelApiGenerator\DataTransferObject\Column\ColumnFloat;
+use JocelimJr\LaravelApiGenerator\DataTransferObject\Column\ColumnId;
+use JocelimJr\LaravelApiGenerator\DataTransferObject\Column\ColumnInteger;
+use JocelimJr\LaravelApiGenerator\DataTransferObject\Column\ColumnSoftDeletes;
+use JocelimJr\LaravelApiGenerator\DataTransferObject\Column\ColumnString;
+use JocelimJr\LaravelApiGenerator\DataTransferObject\Column\ColumnTimestamp;
+use JocelimJr\LaravelApiGenerator\DataTransferObject\Column\ColumnTimestamps;
+use JocelimJr\LaravelApiGenerator\DataTransferObject\Column\ColumnUuid;
 use JocelimJr\LaravelApiGenerator\DataTransferObject\JsonDefinitionsDTO;
 
 class CreateMigrationWriter extends AbstractWriter
@@ -34,13 +36,17 @@ class CreateMigrationWriter extends AbstractWriter
         );
     }
 
+    /**
+     * {{ migrationColumns }}
+     * @return string
+     */
     protected function migrationColumns(): string
     {
         $columns = '';
 
         /**
          * @var int $k
-         * @var ColumnDTO $column
+         * @var AbstractColumn $column
          */
         foreach($this->jsonDefinitionsDTO->getColumns() as $k => $column){
             $_last = $k == count($this->jsonDefinitionsDTO->getColumns()) - 1;
@@ -56,7 +62,7 @@ class CreateMigrationWriter extends AbstractWriter
                 $result = '->default(';
 
                 if($type == 'string'){
-                    $result .= "'" . $column->getDefault() . "'";
+                    $result .= '"' . $column->getDefault() . '"';
                 }
 
                 else if($type == 'boolean'){
@@ -70,7 +76,6 @@ class CreateMigrationWriter extends AbstractWriter
                 $columns .= $result . ')';
             }
 
-            if($column->isDeletedAt() === true) $column->setNullable(true);
             if($column->isPrimary() === true) $columns .= '->primary()';
             if($column->isAutoIncrement() === true) $columns .= '->autoIncrement()';
             if($column->isNullable() === true && $column->getType() !== 'id' && $column->isPrimary() !== true) $columns .= '->nullable()';
@@ -82,23 +87,11 @@ class CreateMigrationWriter extends AbstractWriter
         return $columns;
     }
 
-    /**
-     * @boolean
-     *
-     * @param ColumnBoolean $column
-     * @return string
-     */
     private function columnBoolean(ColumnBoolean $column): string
     {
         return '$table->boolean("' . $column->getName() . '")';
     }
 
-    /**
-     * @dateTimeTz
-     *
-     * @param ColumnDateTimeTz $column
-     * @return string
-     */
     private function columnDateTimeTz(ColumnDateTimeTz $column): string
     {
         // Default state
@@ -109,12 +102,6 @@ class CreateMigrationWriter extends AbstractWriter
         return '$table->dateTimeTz("' . $column->getName() . '", ' . $column->getPrecision() . ')';
     }
 
-    /**
-     * @dateTime
-     *
-     * @param ColumnDateTime $column
-     * @return string
-     */
     private function columnDateTime(ColumnDateTime $column): string
     {
         // Default state
@@ -125,23 +112,11 @@ class CreateMigrationWriter extends AbstractWriter
         return '$table->dateTime("' . $column->getName() . '", ' . $column->getPrecision() . ')';
     }
 
-    /**
-     * @date
-     *
-     * @param ColumnDate $column
-     * @return string
-     */
     private function columnDate(ColumnDate $column): string
     {
         return '$table->date("' . $column->getName() . '")';
     }
 
-    /**
-     * @decimal
-     *
-     * @param ColumnDecimal $column
-     * @return string
-     */
     private function columnDecimal(ColumnDecimal $column): string
     {
         // Default state
@@ -152,12 +127,6 @@ class CreateMigrationWriter extends AbstractWriter
         return '$table->decimal("' . $column->getName() . '", ' . $column->getTotal() . ', ' . $column->getPlaces() . ', ' . ($column->isUnsigned() ? 'true' : 'false') . ')';
     }
 
-    /**
-     * @double
-     *
-     * @param ColumnDouble $column
-     * @return string
-     */
     private function columnDouble(ColumnDouble $column): string
     {
         // Default state
@@ -168,12 +137,6 @@ class CreateMigrationWriter extends AbstractWriter
         return '$table->double("' . $column->getName() . '", ' . $column->getTotal() . ', ' . $column->getPlaces() . ', ' . ($column->isUnsigned() ? 'true' : 'false') . ')';
     }
 
-    /**
-     * @float
-     *
-     * @param ColumnFloat $column
-     * @return string
-     */
     private function columnFloat(ColumnFloat $column): string
     {
         // Default state
@@ -184,39 +147,21 @@ class CreateMigrationWriter extends AbstractWriter
         return '$table->float("' . $column->getName() . '", ' . $column->getTotal() . ', ' . $column->getPlaces() . ', ' . ($column->isUnsigned() ? 'true' : 'false') . ')';
     }
 
-    /**
-     * @id
-     *
-     * @param ColumnId $column
-     * @return string
-     */
     private function columnId(ColumnId $column): string
     {
         return '$table->id(' . ($column->getName() !== 'id' ? "'" . $column->getName() . "'" : "") . ')';
     }
 
-    /**
-     * @integer
-     *
-     * @param ColumnInteger $column
-     * @return string
-     */
     private function columnInteger(ColumnInteger $column): string
     {
         // Default state
-        if(!$column->isAutoIncrement() && !$column->isUnsigned()){
+        if(!$column->autoIncrement() && !$column->isUnsigned()){
             return '$table->integer("' . $column->getName() . '")';
         }
 
-        return '$table->integer("' . $column->getName() . '", ' . ($column->isAutoIncrement() ? 'true' : 'false') . ', ' . ($column->isUnsigned() ? 'true' : 'false') . ')';
+        return '$table->integer("' . $column->getName() . '", ' . ($column->autoIncrement() ? 'true' : 'false') . ', ' . ($column->isUnsigned() ? 'true' : 'false') . ')';
     }
 
-    /**
-     * @string
-     *
-     * @param ColumnString $column
-     * @return string
-     */
     private function columnString(ColumnString $column): string
     {
         // Default state
@@ -227,12 +172,6 @@ class CreateMigrationWriter extends AbstractWriter
         return '$table->string("' . $column->getName() . '", ' . $column->getLength() . ')';
     }
 
-    /**
-     * @timestamp
-     *
-     * @param ColumnTimestamp $column
-     * @return string
-     */
     private function columnTimestamp(ColumnTimestamp $column): string
     {
         // Default state
@@ -243,15 +182,23 @@ class CreateMigrationWriter extends AbstractWriter
         return '$table->timestamp("' . $column->getName() . '", ' . $column->getPrecision() . ')';
     }
 
-    /**
-     * @uuid
-     *
-     * @param ColumnUUID $column
-     * @return string
-     */
-    private function columnUuid(ColumnUUID $column): string
+    private function columnUuid(ColumnUuid $column): string
     {
-        return '$table->uuid("' . $column->getName() . '")';
+        return '$table->uuid(' . ($column->getName() !== 'uuid' ? "'" . $column->getName() . "'" : "") . ')';
+    }
+
+    private function columnTimestamps(ColumnTimestamps $column): string
+    {
+        return '$table->timestamps()';
+    }
+
+    private function columnSoftDeletes(ColumnSoftDeletes $column): string
+    {
+        if($column->getName() == 'deleted_at' && $column->getPrecision() == 0){
+            return '$table->softDeletes()';
+        }
+
+        return '$table->timestamps("' . $column->getName() . '", ' . $column->getPrecision() . ')';
     }
 
 }

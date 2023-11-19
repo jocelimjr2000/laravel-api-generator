@@ -7,50 +7,59 @@ use ReflectionClass;
 
 abstract class AbstractDTO implements JsonSerializable
 {
-    private array $_jsonIgnore = [];
+    private array $_jsonIgnore = ['_jsonIgnore'];
 
     /**
-     * jsonIgnore
-     *
-     * @param  mixed $value
+     * @param mixed $value
      * @return AbstractDTO
      */
-    public function jsonIgnore(string|array $value): AbstractDTO
+    public function addToJsonIgnore(string|array $value): AbstractDTO
     {
-        if(!is_array($value)){
+        if (!is_array($value)) {
             $value = [$value];
         }
 
-        $this->_jsonIgnore = array_merge($this->_jsonIgnore, $value);
+        $this->_jsonIgnore = array_unique(array_merge($this->_jsonIgnore, $value));
 
         return $this;
     }
 
     /**
-     * jsonSerialize
-     *
-     * @return array
+     * @param mixed $value
+     * @return AbstractDTO
      */
+    public function rmToJsonIgnore(string|array $value): AbstractDTO
+    {
+        if (!is_array($value)) {
+            $value = [$value];
+        }
+
+        $this->_jsonIgnore = array_diff($this->_jsonIgnore, $value);
+
+        return $this;
+    }
+
     public function jsonSerialize(): array
     {
-        $reflection = new ReflectionClass($this);
-        $properties = [];
+        $properties = array();
 
-        foreach($reflection->getProperties() as $property) {
+        $rc = new ReflectionClass($this);
 
-            if(in_array($property->getName(), $this->_jsonIgnore)){
-                continue;
+        do {
+            $rp = array();
+
+            foreach ($rc->getProperties() as $p) {
+                $p->setAccessible(true);
+
+                if (in_array($p->getName(), $this->_jsonIgnore)) {
+                    continue;
+                }
+
+                $rp[$p->getName()] = $p->getValue($this);
             }
 
-            $property->setAccessible(true);
-            $method = 'get' . ucfirst($property->getName());
-
-            if(method_exists($this, $method)){
-                $properties[$property->getName()] = $this->$method();
-            }else{
-                $properties[$property->getName()] = $property->getValue($this);
-            }
-        }
+            $properties = array_merge($rp, $properties);
+        } while ($rc = $rc->getParentClass());
 
         return $properties;
     }

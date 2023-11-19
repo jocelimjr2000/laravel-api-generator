@@ -3,43 +3,24 @@
 
 namespace JocelimJr\LaravelApiGenerator\DataTransferObject;
 
+use JocelimJr\LaravelApiGenerator\DataTransferObject\Column\AbstractColumn;
+
 class JsonDefinitionsDTO extends AbstractDTO
 {
     private ?string $apiName = null;
     private ?string $module = null;
     private ?string $routePrefix = null;
     private ?string $table = null;
-    private array $columns;
-    private string|array $primaryKey = 'id';
-    private ArchitectureDTO $architecture;
-    private WriteApiDTO $writeApi;
-    private CreateFileDTO $createFile;
-    private FileNameDTO $fileName;
-    private SwaggerDTO $swagger;
+    private ?ArchitectureDTO $architecture = null;
+    private ?WriteApiDTO $writeApi = null;
+    private ?CreateFileDTO $createFile = null;
+    private ?FileNameDTO $fileName = null;
+    private ?SwaggerDTO $swagger = null;
+    private array $columns = [];
 
-    public function __construct(object $json = null)
+    public function __construct()
     {
-        if($json){
-            $columns = [];
-
-            foreach($json->columns as $v){
-                $columns[] = new ColumnDTO($v);
-            }
-
-            $this->apiName = $json->apiName;
-            $this->module = $json->module;
-            $this->routePrefix = $json->routePrefix;
-            $this->table = $json->table;
-            $this->columns = $columns;
-            $this->primaryKey = $json->primaryKey;
-            $this->architecture = new ArchitectureDTO($json->architecture);
-            $this->writeApi = new WriteApiDTO($json->writeApi);
-            $this->createFile = new CreateFileDTO($json->createFile);
-            $this->fileName = new FileNameDTO($json->fileName);
-            $this->swagger = new SwaggerDTO($json->swagger);
-        }else{
-            $this->loadDataByConfig();
-        }
+        $this->loadDataByConfig();
     }
 
     public function getApiName(): ?string
@@ -83,34 +64,6 @@ class JsonDefinitionsDTO extends AbstractDTO
     public function setTable(?string $table): JsonDefinitionsDTO
     {
         $this->table = $table;
-        return $this;
-    }
-
-    public function getColumns(): array
-    {
-        return $this->columns;
-    }
-
-    public function setColumns(array $columns): JsonDefinitionsDTO
-    {
-        $this->columns = $columns;
-        return $this;
-    }
-
-    public function addColumns(array $columns): JsonDefinitionsDTO
-    {
-        $this->columns[] = $columns;
-        return $this;
-    }
-
-    public function getPrimaryKey(): array|string
-    {
-        return $this->primaryKey;
-    }
-
-    public function setPrimaryKey(array|string $primaryKey): JsonDefinitionsDTO
-    {
-        $this->primaryKey = $primaryKey;
         return $this;
     }
 
@@ -166,6 +119,23 @@ class JsonDefinitionsDTO extends AbstractDTO
     public function setSwagger(SwaggerDTO $swagger): JsonDefinitionsDTO
     {
         $this->swagger = $swagger;
+        return $this;
+    }
+
+    public function getColumns(): array
+    {
+        return $this->columns;
+    }
+
+    public function setColumns(array $columns): JsonDefinitionsDTO
+    {
+        $this->columns = $columns;
+        return $this;
+    }
+
+    public function addColumn(AbstractColumn $column): JsonDefinitionsDTO
+    {
+        $this->columns[] = $column;
         return $this;
     }
 

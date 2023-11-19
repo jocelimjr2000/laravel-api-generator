@@ -14,26 +14,37 @@ abstract class AbstractReplace
         $this->jsonDefinitionsDTO = $jsonDefinitionsDTO;
     }
 
+    /**
+     * {{ model }}
+     * @return string
+     */
     protected function model(): string
     {
         return $this->jsonDefinitionsDTO->getFileName()->getModel();
     }
 
+    /**
+     * {{ modelVar }}
+     * @return string
+     */
     protected function modelVar(): string
     {
         return '$' . lcfirst($this->jsonDefinitionsDTO->getFileName()->getModel());
     }
 
+    /**
+     * {{ modelTable }}
+     * @return string
+     */
     protected function table(): string
     {
         return $this->jsonDefinitionsDTO->getTable();
     }
 
-    protected function primaryKey(): string
-    {
-        return $this->jsonDefinitionsDTO->getPrimaryKey()->getName();
-    }
-
+    /**
+     * {{ imports }}
+     * @return string
+     */
     protected function imports(): string
     {
         $str = '';

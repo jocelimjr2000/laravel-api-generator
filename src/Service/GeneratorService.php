@@ -31,7 +31,7 @@ class GeneratorService
      */
     public function generate(JsonDefinitionsDTO $jsonDefinitionsDTO): void
     {
-        $this->check($jsonDefinitionsDTO);
+//        $this->check($jsonDefinitionsDTO);
 
 //        $createRepositoryWriter = new CreateRepositoryWriter($objGenDTO);
 //        $createMapperWriter = new CreateMapperWriter($objGenDTO);
@@ -68,80 +68,79 @@ class GeneratorService
      * @param JsonDefinitionsDTO $objGenDTO
      * @return void
      */
-    private function check(JsonDefinitionsDTO $objGenDTO): void
-    {
-        $errors = [];
-
-        if($objGenDTO->getApiName() == null) $errors[] = '> moduleName: Required';
-
-        $usingAlias = false;
-
-        if(count($objGenDTO->getColumns()) > 0){
-
-            /**
-             * @var int $pos
-             * @var ColumnDTO $column
-             */
-            foreach($objGenDTO->getColumns() as $pos => $column){
-
-                if($column->getName() == null) $errors[] = '> columns[' . $pos . '].name: Required';
-
-                if($column->getType() !== null){
-                    if(!in_array($column->getType(), DatabaseHelper::getAvailableColumns())) $errors[] = '> columns[' . $pos . '].type: Invalid column type \'' . $column->getType() . '\'';
-                }else{
-                    $errors[] = '> columns[' . $pos . '].type: Required';
-                }
-
-                if(!$usingAlias && $column->getAlias() !== null){
-                    $usingAlias = true;
-                }
-            }
-        }else{
-            $errors[] = '> columns: Required';
-        }
-
-        if($usingAlias && $objGenDTO->getArchitecture()->isDto() === false){
-            $errors[] = '> To use "alias" in the columns it is necessary to enable the DTO layer ("dtoLayer")';
-        }
-
-        if($objGenDTO->getArchitecture()->isMapper() === true && $objGenDTO->getArchitecture()->isDto() === false){
-            $errors[] = '> To use "mapperLayer" it is necessary to enable the DTO layer ("dtoLayer")';
-        }
-
-        if(count($errors) > 0){
-            Console::log($errors, 'black', true, 'red');
-            die();
-        }
-    }
-
-    private function result(ObjGenDTO $objGenDTO): void
-    {
-        $arr = [];
-        $arr[] = '> Base Path';
-        $arr[] = '>> ' . PathHelper::basePath();
-        $arr[] = '';
-        $arr[] = '> Created Files';
-
-        foreach($objGenDTO->getCreatedFiles() as $createdFile){
-            $arr[] = '>> '. $createdFile;
-        }
-
-        $arr[] = '';
-        $arr[] = '> Modified Files';
-
-        foreach($objGenDTO->getModifiedFiles() as $modifiedFile){
-            $arr[] = '>> '. $modifiedFile;
-        }
-
-        $arr[] = '';
-        $arr[] = '> Errors';
-
-        foreach($objGenDTO->getErrors() as $error){
-            $arr[] = '>> '. $error;
-        }
-
-        $arr[] = '';
-
-        Console::log($arr, 'black', true, 'red');
-    }
+//    private function check(JsonDefinitionsDTO $objGenDTO): void
+//    {
+//        $errors = [];
+//
+//        if($objGenDTO->getApiName() == null) $errors[] = '> moduleName: Required';
+//
+//        $usingAlias = false;
+//
+//        if(count($objGenDTO->getColumns()) > 0){
+//
+//            /**
+//             * @var int $pos
+//             * @var ColumnDTO $column
+//             */
+//            foreach($objGenDTO->getColumns() as $pos => $column){
+//                if($column->getName() == null) $errors[] = '> columns[' . $pos . '].name: Required';
+//
+//                if($column->getType() !== null){
+//                    if(!in_array($column->getType(), DatabaseHelper::getAvailableColumns())) $errors[] = '> columns[' . $pos . '].type: Invalid column type \'' . $column->getType() . '\'';
+//                }else{
+//                    $errors[] = '> columns[' . $pos . '].type: Required';
+//                }
+//
+//                if(!$usingAlias && $column->getAlias() !== null){
+//                    $usingAlias = true;
+//                }
+//            }
+//        }else{
+//            $errors[] = '> columns: Required';
+//        }
+//
+//        if($usingAlias && $objGenDTO->getArchitecture()->isDto() === false){
+//            $errors[] = '> To use "alias" in the columns it is necessary to enable the DTO layer ("dtoLayer")';
+//        }
+//
+//        if($objGenDTO->getArchitecture()->isMapper() === true && $objGenDTO->getArchitecture()->isDto() === false){
+//            $errors[] = '> To use "mapperLayer" it is necessary to enable the DTO layer ("dtoLayer")';
+//        }
+//
+//        if(count($errors) > 0){
+//            Console::log($errors, 'black', true, 'red');
+//            die();
+//        }
+//    }
+//
+//    private function result(ObjGenDTO $objGenDTO): void
+//    {
+//        $arr = [];
+//        $arr[] = '> Base Path';
+//        $arr[] = '>> ' . PathHelper::basePath();
+//        $arr[] = '';
+//        $arr[] = '> Created Files';
+//
+//        foreach($objGenDTO->getCreatedFiles() as $createdFile){
+//            $arr[] = '>> '. $createdFile;
+//        }
+//
+//        $arr[] = '';
+//        $arr[] = '> Modified Files';
+//
+//        foreach($objGenDTO->getModifiedFiles() as $modifiedFile){
+//            $arr[] = '>> '. $modifiedFile;
+//        }
+//
+//        $arr[] = '';
+//        $arr[] = '> Errors';
+//
+//        foreach($objGenDTO->getErrors() as $error){
+//            $arr[] = '>> '. $error;
+//        }
+//
+//        $arr[] = '';
+//
+//        Console::log($arr, 'black', true, 'red');
+//    }
 }
