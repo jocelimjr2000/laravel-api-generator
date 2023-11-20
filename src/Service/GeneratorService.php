@@ -52,6 +52,11 @@ class GeneratorService
             $modelWriter->write();
         }
 
+        if($jsonDefinitionsDTO->getCreateFile()->isDto()){
+            $modelWriter = new CreateDTOWriter($jsonDefinitionsDTO);
+            $modelWriter->write();
+        }
+
 //        if($objGenDTO->isRepositoryLayer() && $objGenDTO->isCreateRepository()) $createRepositoryWriter->write();
 //        if($objGenDTO->isMapperLayer() && $objGenDTO->isCreateMapper()) $createMapperWriter->write();
 //        if($objGenDTO->isDtoLayer() && $objGenDTO->isCreateDTO()) $createDTOWriter->write();

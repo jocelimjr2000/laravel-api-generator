@@ -28,6 +28,7 @@ class AbstractColumn extends AbstractDTO
             'autoIncrement',
             'nullable',
             'unique',
+            'fillable',
             'default'
         ]);
     }
@@ -123,6 +124,13 @@ class AbstractColumn extends AbstractDTO
     public function setFillable(bool $fillable): AbstractColumn
     {
         $this->fillable = $fillable;
+
+        if($fillable){
+            $this->rmToJsonIgnore('fillable');
+        }else{
+            $this->addToJsonIgnore('fillable');
+        }
+
         return $this;
     }
 
